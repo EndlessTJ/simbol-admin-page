@@ -90,7 +90,7 @@ export default function PartnerList() {
     // }
     
       console.log('data', data)
-    // console.log(values);
+    console.log(values);
   };
 
   return (

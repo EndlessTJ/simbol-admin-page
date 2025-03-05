@@ -17,7 +17,7 @@ export default function Login() {
   const onFinish = async (values: FieldType) => {
     console.log(values);
     try {
-      // await requestPost("/auth/login", values);
+      await requestPost("/auth/login", values);
  
       message.success("登录成功");
       router.push("/main");
