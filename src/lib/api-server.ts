@@ -27,7 +27,6 @@ export const requestGet = async (url: string, params?: unknown) => {
     }
     return response.data;
   } catch (error: unknown) {
-    console.log(error, 1111);
     if (error instanceof AxiosError) {
       if (error.response?.status === 401) {
         redirect('/login');
