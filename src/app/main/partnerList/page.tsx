@@ -1,70 +1,71 @@
 "use client";
 import React from "react";
 import AdvancedSearchForm from "@/components/AdvancedSearchForm";
-import { Col, Form, Input, DatePicker, Select, TableProps, Tag, Table } from "antd";
-import apiClient from "@/lib/api-client";
-import { CommonType, CooperationStatusEnum, CompanyEnum, PartnerChannelType, ProductsType  } from "@/type";
 import {
-  Company,
-  CooperationStatus,
-} from "@/constants";
+  Col,
+  Form,
+  Input,
+  DatePicker,
+  Select,
+  TableProps,
+  Tag,
+  Table,
+} from "antd";
+import apiClient from "@/lib/api-client";
+import {
+  CommonType,
+  CooperationStatusEnum,
+  CompanyEnum,
+  PartnerChannelType,
+  ProductsType,
+} from "@/type";
+import { Company, CooperationStatus } from "@/constants";
 const { RangePicker } = DatePicker;
 const { Item } = Form;
 const { Option } = Select;
 
-
-const columns: TableProps<PartnerChannelType>['columns'] = [
+const columns: TableProps<PartnerChannelType>["columns"] = [
   {
-    title: '公司名',
-    dataIndex: 'name',
-    key: 'name',
+    title: "公司名",
+    dataIndex: "name",
+    key: "name",
     // render: (text) => <a>{text}</a>,
   },
   {
-    title: '签约日期',
-    dataIndex: 'contractDate',
-    key: 'contractDate',
+    title: "签约日期",
+    dataIndex: "contractDate",
+    key: "contractDate",
   },
   {
-    title: '合作状态',
-    dataIndex: 'currentStatus',
-    key: 'currentStatus',
+    title: "合作状态",
+    dataIndex: "currentStatus",
+    key: "currentStatus",
   },
   {
-    title: '公司产品',
-    dataIndex: 'products',
-    key: 'products',
-    render: (products: ProductsType) => products.name
+    title: "公司产品",
+    dataIndex: "products",
+    key: "products",
+    render: (products: ProductsType) => products.name,
   },
   {
-    title: '签约主体',
-    key: 'signCompony',
-    dataIndex: 'signCompony',
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
+    title: "签约主体",
+    key: "signCompony",
+    dataIndex: "signCompony",
+    render: (value: CompanyEnum, _, index: number) => (
+      <Tag color={index % 2 == 0 ? "geekblue" : "green"} key={value}>
+        {value}
+      </Tag>
     ),
   },
   {
-    title: '别名',
-    dataIndex: 'alias',
-    key: 'alias',
+    title: "别名",
+    dataIndex: "alias",
+    key: "alias",
   },
   {
-    title: '备注',
-    dataIndex: 'remark',
-    key: 'remark',
+    title: "备注",
+    dataIndex: "remark",
+    key: "remark",
   },
   // {
   //   title: 'Action',
@@ -81,22 +82,22 @@ const columns: TableProps<PartnerChannelType>['columns'] = [
 export default function PartnerList() {
   const onFinish = async (values: CommonType) => {
     // const data = await fetch('http://localhost:3001/users/getRole')
-    const data = await apiClient.get('/users/getRole')
+    const data = await apiClient.get("/users/getRole");
     // try {
     //   const res = await apiClient.get('/users/getRole')
     //   console.log('res', res)
     // } catch (error) {
     //   console.error('error', error)
     // }
-    
-      console.log('data', data)
+
+    console.log("data", data);
     console.log(values);
   };
 
   return (
     <div className="dash">
       <AdvancedSearchForm onFinish={onFinish}>
-        <Col span={8} key={'name'}>
+        <Col span={8} key={"name"}>
           <Item
             name={`name`}
             label={`公司名称`}
@@ -110,7 +111,7 @@ export default function PartnerList() {
             <Input placeholder="请输入公司名" />
           </Item>
         </Col>
-        <Col span={8} key={'contractDate'}>
+        <Col span={8} key={"contractDate"}>
           <Item
             name={`contractDate`}
             label={`签约日期`}
@@ -124,7 +125,7 @@ export default function PartnerList() {
             <RangePicker />
           </Item>
         </Col>
-        <Col span={8} key={'currentStatus'}>
+        <Col span={8} key={"currentStatus"}>
           <Item
             name={`currentStatus`}
             label={`合作状态`}
@@ -136,13 +137,19 @@ export default function PartnerList() {
             ]}
           >
             <Select>
-              <Option value={CooperationStatusEnum.ACTIVE}>{CooperationStatus[CooperationStatusEnum.ACTIVE]}</Option>
-              <Option value={CooperationStatusEnum.SUSPENDED}>{CooperationStatus[CooperationStatusEnum.SUSPENDED]}</Option>
-              <Option value={CooperationStatusEnum.TERMINATED}>{CooperationStatus[CooperationStatusEnum.TERMINATED]}</Option>
+              <Option value={CooperationStatusEnum.ACTIVE}>
+                {CooperationStatus[CooperationStatusEnum.ACTIVE]}
+              </Option>
+              <Option value={CooperationStatusEnum.SUSPENDED}>
+                {CooperationStatus[CooperationStatusEnum.SUSPENDED]}
+              </Option>
+              <Option value={CooperationStatusEnum.TERMINATED}>
+                {CooperationStatus[CooperationStatusEnum.TERMINATED]}
+              </Option>
             </Select>
           </Item>
         </Col>
-        <Col span={8} key={'signCompony'}>
+        <Col span={8} key={"signCompony"}>
           <Item
             name={`signCompony`}
             label={`签约主体`}
@@ -154,8 +161,8 @@ export default function PartnerList() {
             ]}
           >
             <Select>
-              <Option value={CompanyEnum.QMYC}>{Company['QMYC']}</Option>
-              <Option value={CompanyEnum.SBJZ}>{Company['SBJZ']}</Option>
+              <Option value={CompanyEnum.QMYC}>{Company["QMYC"]}</Option>
+              <Option value={CompanyEnum.SBJZ}>{Company["SBJZ"]}</Option>
             </Select>
           </Item>
         </Col>
