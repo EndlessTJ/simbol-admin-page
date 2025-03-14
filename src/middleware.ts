@@ -16,9 +16,7 @@ export default async function middleware(request: NextRequest) {
   //   // 转换cookie
   //   response.headers.set('Authorization', `Bearer ${token.value}`);
   // } 
-  console.log(token, 666666)
   if(!token && !publicPaths.includes(request.nextUrl.pathname)) {
-    console.log('进入重定向')
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl, {
       headers: requestHeaders

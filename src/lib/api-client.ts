@@ -8,7 +8,6 @@ const request = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*', 
   }
 });
 

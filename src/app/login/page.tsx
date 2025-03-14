@@ -15,7 +15,6 @@ export default function Login() {
   const [form] = Form.useForm();
 
   const onFinish = async (values: FieldType) => {
-    console.log(values);
     try {
       await requestPost("/auth/login", values);
  
