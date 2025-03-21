@@ -27,7 +27,7 @@ request.interceptors.response.use(null, async (error) => {
 });
 
 // 封装get请求方法
-export const requestGet = async (url: string, params: unknown) => {
+export const requestGet = async (url: string, params?: unknown) => {
   const response = await request.get(url, { params });
   return response.data;
 }
