@@ -38,5 +38,11 @@ export const requestPost = async (url: string, data: unknown) => {
   return response.data;
 }
 
+// 封装put请求方法
+export const requestPut = async (url: string, data: unknown) => {
+  const response = await request.put(url, data);
+  return response.data;
+}
+
 
 export default request;

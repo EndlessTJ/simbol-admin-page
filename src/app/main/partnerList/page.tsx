@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { FormInstance, message, Space, TablePaginationConfig } from "antd";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import { usePathname } from "next/navigation";
 import LocaleWrap from "@/components/LocaleConfigWrap";
 import AdvancedSearchForm from "@/components/AdvancedSearchForm";
+import SearchActionWrap from "@/components/SearchActionWrap";
 import {
   Col,
   Form,
@@ -15,36 +16,38 @@ import {
   Tag,
   Table,
   Button,
-  Row,
 } from "antd";
-import { requestPost, requestGet } from "@/lib/api-client";
-import PartnerMsgEdit from "@/components/PartnerMsgEdit";
+import { requestPost, requestGet, requestPut } from "@/lib/api-client";
+// import PartnerMsgEdit from "@/components/PartnerMsgEdit";
 import {
   CommonType,
   CooperationStatusEnum,
   CompanyEnum,
   PartnerChannelType,
   ProductsType,
-  ModalText,
+  ModalFormText,
   CooperationStatusTextEnum,
   cooperationType,
+  ModalFormHandleStatus,
+  PartnerChannelQueryType,
 } from "@/type";
 import { Company, CooperationStatus } from "@/constants";
+import FormModal from "@/components/FormModal";
 
-import styles from "./index.module.scss";
 const { RangePicker } = DatePicker;
 const { Item } = Form;
 const { Option } = Select;
 export default function PartnerList() {
   const [dataSource, setDataSource] = useState<PartnerChannelType[]>([]);
+  const [products, setProducts] = useState<ProductsType[]>([]);
+  const [updateId, setUpdateId] = useState<string>();
   const [modalShow, setModalShow] = useState<boolean>(false);
-  const [initValues, setInitValues] = useState<PartnerChannelType>();
+  const [initValues, setInitValues] = useState<PartnerChannelQueryType >();
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>();
   const [searchParams, setSearchParams] =
     useState<Omit<PartnerChannelType, "products" | "remark">>();
-  const [handleStatus, setHandleStatus] =
-    useState<keyof typeof ModalText>("CREATE");
+  const [openModalFormOpenStatus, setOpenModalFormOpenStatus] = useState<Exclude<ModalFormHandleStatus, "CLOSE" | "CONFIRM">>("CREATE_OPEN");
   const pathname = usePathname();
 
   const columns: TableProps<PartnerChannelType>["columns"] = useMemo(
@@ -70,7 +73,7 @@ export default function PartnerList() {
         title: "公司产品",
         dataIndex: "products",
         key: "products",
-        render: (products: ProductsType) => products?.name,
+        render: (products: ProductsType[]) => products?.map(product => <Tag bordered={false} color="orange" key={product.id}>{product.name}</Tag>),
       },
       {
         title: "签约主体",
@@ -97,36 +100,37 @@ export default function PartnerList() {
         key: "action",
         render: (_, record) => (
           <Space size="middle">
-            <Button onClick={() => updateItem(record)} type="link">修改</Button>
+            <Button onClick={() => updateItem(record)} type="link">
+              修改
+            </Button>
           </Space>
         ),
       },
     ],
     []
   );
+  // 根据公司名获取产品
+  const getProductsByPartnerName = useCallback(async (partnerName: string) => {
+    const products = await requestGet("/products/listByPartnerName", {name: partnerName});
 
-  const updateItem = useCallback(
-    (record: PartnerChannelType) => {
-      handleEditModal("update");
-      
-      console.log(record, 6666)
-      setInitValues({
-        ...record,
-        contractDate: dayjs(record.contractDate) as unknown as Date,
-        // name: record.name,
-        // currentStatus: record.currentStatus,
-        // signCompony: record.signCompony,
-        // products: record.products,
-        // alias: record.alias,
-        // remark: record.remark
-      })
-    },
-    [],
-  )
-  
+    setProducts(products);
+  },[])
+
+  const updateItem = useCallback(async (record: PartnerChannelType) => {
+    await getProductsByPartnerName(record.name)
+    setUpdateId(record.id)
+    handleEditModal("UPDATE_OPEN");
+    setInitValues({
+      ...record,
+      products: record.products?.map(product => product.id),
+      contractDate: dayjs(record.contractDate) as unknown as Date,
+    });
+  }, []);
+
+
 
   const getDataSource = useCallback(async () => {
-    const data = await requestGet("/business/partner", {
+    const data = await requestGet("/partners/list", {
       page: pagination?.current || 1,
       limit: pagination?.size || 10,
       sortBy: "contractDate",
@@ -148,32 +152,31 @@ export default function PartnerList() {
   }, [confirmLoading, getDataSource]);
 
   const handleEditModal = (
-    handleType: "close" | "confirm" | "create" | "update",
+    handleType: ModalFormHandleStatus,
     form?: FormInstance
   ) => {
-    if (handleType !== "confirm") {
+    if (handleType !== "CONFIRM") {
       setModalShow(!modalShow);
     }
-    if (handleType === "create") {
-      setHandleStatus("CREATE");
+    if(handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
+      setOpenModalFormOpenStatus(handleType)
     }
-    if(handleType === 'update') {
-      setHandleStatus("UPDATE");
-    }
-
-    if (handleType === "confirm" && form) {
+    if (handleType === "CONFIRM" && form) {
       form.submit();
-      // form.resetFields();
     }
-    // if(handleType === "confirm" || handleType === "close") {
-    //   form?.resetFields();
-    // }
   };
 
   const handleEditData = async (values: PartnerChannelType) => {
     try {
       setConfirmLoading(true);
-      await requestPost("/business/partner", values);
+      console.log(openModalFormOpenStatus)
+      if(openModalFormOpenStatus === "CREATE_OPEN") {
+        await requestPost("/partners/create", values);
+      }
+      if(openModalFormOpenStatus === "UPDATE_OPEN") {
+        await requestPut(`/partners/update/${updateId}`, values);
+      }
+
       setConfirmLoading(false);
       message.success("创建成功");
     } catch (error) {
@@ -231,29 +234,72 @@ export default function PartnerList() {
           </Item>
         </Col>
       </AdvancedSearchForm>
-
-      <Row className={styles.contorlwrap} gutter={[16, 16]} justify={"end"}>
-        <Col>
-          <Button
-            onClick={() => {
-              handleEditModal("create");
-            }}
-            type="primary"
-          >
-            创建
-          </Button>
-        </Col>
-      </Row>
-      <PartnerMsgEdit
-        status={handleStatus}
+      <SearchActionWrap>
+        <Button
+          onClick={() => {
+            handleEditModal("CREATE_OPEN");
+          }}
+          type="primary"
+        >
+          创建
+        </Button>
+      </SearchActionWrap>
+      <FormModal
+        // status={handleStatus}
         handleOk={handleEditModal}
-        modalTitle={ModalText[handleStatus]}
+        modalTitle={ModalFormText[openModalFormOpenStatus]}
         confirmLoading={confirmLoading}
         onFinish={handleEditData}
         initValues={initValues}
         handleCancel={handleEditModal}
         show={modalShow}
-      />
+      >
+        <Form.Item name="name" label="公司名称">
+          <Input placeholder="请输入" />
+        </Form.Item>
+        <Form.Item name="contractDate" label="签约日期">
+          <DatePicker placeholder="请选择" />
+        </Form.Item>
+        <Form.Item name="currentStatus" label="合作状态">
+          <Select
+            placeholder="请选择"
+            options={Object.keys(CooperationStatus).map((value: string) => ({
+              value,
+              label: CooperationStatus[value as keyof typeof CooperationStatus],
+            }))}
+          ></Select>
+        </Form.Item>
+        <Form.Item name="signCompony" label="签约主体">
+          <Select
+            placeholder="请选择"
+            options={Object.values(Company).map((value: string) => ({
+              value,
+              label: value,
+            }))}
+          ></Select>
+        </Form.Item>
+        {openModalFormOpenStatus === "UPDATE_OPEN" && (
+          <Form.Item name="products" label="合作产品">
+            <Select
+              placeholder="请选择"
+              mode="multiple"
+              options={(products as ProductsType[]).map(
+                (value: ProductsType) => ({
+                  value: value.id,
+                  label: value.name,
+                })
+              )}
+            ></Select>
+          </Form.Item>
+        )}
+
+        <Form.Item name="alias" label="公司别名">
+          <Input placeholder="请输入" />
+        </Form.Item>
+        <Form.Item name="remark" label="备注">
+          <Input.TextArea rows={6} />
+        </Form.Item>
+      </FormModal>
 
       <Table<PartnerChannelType>
         pagination={{ showSizeChanger: true }}

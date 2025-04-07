@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, FC, useEffect } from "react";
 import { Select, Form, Input, Modal, DatePicker, theme, FormInstance } from "antd";
-import { PartnerChannelType, ProductsType, ModalText } from "@/type";
+import { PartnerChannelType, ProductsType, ModalFormText } from "@/type";
 import { CooperationStatus, Company } from "@/constants";
 import _, { create } from "lodash";
 export interface PartnerMsgEditProps {
@@ -9,7 +9,7 @@ export interface PartnerMsgEditProps {
   show: boolean;
   confirmLoading: boolean;
   initValues?: PartnerChannelType;
-  status: keyof typeof ModalText;
+  status: keyof typeof ModalFormText;
   handleOk: (handleType: "close" | "confirm" | "create" | "update", form: FormInstance) => void;
   handleCancel: (handleType: "close" | "confirm" | "create" | "update", form: FormInstance) => void;
   onFinish: (values: PartnerChannelType) => void;
