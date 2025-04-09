@@ -1,7 +1,7 @@
 "use client";
 import React, { FC, useEffect } from "react";
 import { Form, Modal, theme, FormInstance } from "antd";
-import {ModalFormHandleStatus } from "@/type";
+import {ModalFormHandleStatus, PartnerChannelType, ProductsFormType } from "@/type";
 export interface FormModalProps<ValueType = unknown> {
   modalTitle: string;
   show: boolean;
@@ -14,7 +14,7 @@ export interface FormModalProps<ValueType = unknown> {
   children: React.ReactNode;
 }
 
-const FormModal: FC<FormModalProps<any>> = ({
+const FormModal = <ValueType,>({
   modalTitle,
   show,
   confirmLoading,
@@ -24,7 +24,7 @@ const FormModal: FC<FormModalProps<any>> = ({
   handleOk,
   onFinish,
   children
-}) => {
+}:FormModalProps<ValueType>) => {
   const { token } = theme.useToken();
   const [form] = Form.useForm();
 

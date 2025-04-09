@@ -235,7 +235,7 @@ export default function PartnerList() {
           创建
         </Button>
       </SearchActionWrap>
-      <FormModal
+      <FormModal<PartnerChannelType>
         // status={handleStatus}
         handleOk={handleEditModal}
         modalTitle={ModalFormText[openModalFormOpenStatus]}

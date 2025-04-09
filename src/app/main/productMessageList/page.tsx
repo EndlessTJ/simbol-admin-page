@@ -192,7 +192,7 @@ export default function ProductList() {
     setPagination(pagination);
   };
 
-  const searchCompany = async (value: any): Promise<OptionsType[]> => {
+  const searchCompany = async (value: string): Promise<OptionsType[]> => {
     const partners = await requestGet("/partners/listbyname", {
       keyword: value,
     });
@@ -202,7 +202,7 @@ export default function ProductList() {
     }));
   };
 
-  const searchChannel = async (value: any): Promise<OptionsType[]> => {
+  const searchChannel = async (value: string): Promise<OptionsType[]> => {
     const channels = await requestGet("/channels/listbyname", {
       keyword: value,
     });
@@ -252,7 +252,7 @@ export default function ProductList() {
         </Button>
       </SearchActionWrap>
 
-      <FormModal
+      <FormModal<ProductsFormType>
         // status={handleStatus}
         handleOk={handleEditModal}
         modalTitle={ModalFormText[openModalFormOpenStatus]}
