@@ -1,8 +1,8 @@
 "use client";
 import React, { FC, useEffect } from "react";
 import { Form, Modal, theme, FormInstance } from "antd";
-import {ModalFormHandleStatus, ModalFormText } from "@/type";
-export interface FormModalProps<ValueType = any> {
+import {ModalFormHandleStatus } from "@/type";
+export interface FormModalProps<ValueType = unknown> {
   modalTitle: string;
   show: boolean;
   confirmLoading: boolean;

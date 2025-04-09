@@ -1,5 +1,5 @@
 import { Select, SelectProps, Spin } from "antd";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useMemo, useRef, useState } from "react";
 import {PartnerChannelType} from "@/type";
 import { debounce } from "lodash";
 
@@ -9,7 +9,7 @@ export interface OptionsType {
   value: string;
 }
 
-export interface DebounceSelectProps<ValueType = any>
+export interface DebounceSelectProps<ValueType = unknown>
   extends Omit<SelectProps<ValueType | ValueType[]>, 'options' | 'children'> {
   fetchOptions: (search: string) => Promise<OptionsType[]>;
   initOptions?: OptionsType[];
