@@ -39,7 +39,6 @@ const { Item } = Form;
 const { Option } = Select;
 export default function PartnerList() {
   const [dataSource, setDataSource] = useState<PartnerChannelType[]>([]);
-  const [products, setProducts] = useState<ProductsType[]>([]);
   const [updateId, setUpdateId] = useState<string>();
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<PartnerChannelQueryType >();
@@ -109,20 +108,13 @@ export default function PartnerList() {
     ],
     []
   );
-  // 根据公司名获取产品
-  const getProductsByPartnerName = useCallback(async (partnerName: string) => {
-    const products = await requestGet("/products/listByPartnerName", {name: partnerName});
-
-    setProducts(products);
-  },[])
 
   const updateItem = useCallback(async (record: PartnerChannelType) => {
-    await getProductsByPartnerName(record.name)
     setUpdateId(record.id)
     handleEditModal("UPDATE_OPEN");
     setInitValues({
       ...record,
-      products: record.products?.map(product => product.id),
+      // products: record.products?.map(product => product.id),
       contractDate: dayjs(record.contractDate) as unknown as Date,
     });
   }, []);
@@ -169,7 +161,6 @@ export default function PartnerList() {
   const handleEditData = async (values: PartnerChannelType) => {
     try {
       setConfirmLoading(true);
-      console.log(openModalFormOpenStatus)
       if(openModalFormOpenStatus === "CREATE_OPEN") {
         await requestPost("/partners/create", values);
       }
@@ -278,21 +269,6 @@ export default function PartnerList() {
             }))}
           ></Select>
         </Form.Item>
-        {openModalFormOpenStatus === "UPDATE_OPEN" && (
-          <Form.Item name="products" label="合作产品">
-            <Select
-              placeholder="请选择"
-              mode="multiple"
-              options={(products as ProductsType[]).map(
-                (value: ProductsType) => ({
-                  value: value.id,
-                  label: value.name,
-                })
-              )}
-            ></Select>
-          </Form.Item>
-        )}
-
         <Form.Item name="alias" label="公司别名">
           <Input placeholder="请输入" />
         </Form.Item>

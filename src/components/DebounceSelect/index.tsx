@@ -1,5 +1,5 @@
 import { Select, SelectProps, Spin } from "antd";
-import { FC, useMemo, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import {PartnerChannelType} from "@/type";
 import { debounce } from "lodash";
 
@@ -12,11 +12,12 @@ export interface OptionsType {
 export interface DebounceSelectProps<ValueType = any>
   extends Omit<SelectProps<ValueType | ValueType[]>, 'options' | 'children'> {
   fetchOptions: (search: string) => Promise<OptionsType[]>;
+  initOptions?: OptionsType[];
   debounceTimeout?: number;
 }
 
-const DebounceSelect: FC<DebounceSelectProps<PartnerChannelType>>  = ({ fetchOptions, debounceTimeout = 800, ...props }) => {
-  const [options, setOptions] = useState<OptionsType[]>([]);
+const DebounceSelect: FC<DebounceSelectProps<PartnerChannelType>>  = ({ fetchOptions, initOptions = [],  debounceTimeout = 800, ...props }) => {
+  const [options, setOptions] = useState<OptionsType[]>();
   const [fetching, setFetching] = useState(false);
   const fetchRef = useRef(0);
   const debounceFetcher = useMemo(() => {
@@ -46,7 +47,7 @@ const DebounceSelect: FC<DebounceSelectProps<PartnerChannelType>>  = ({ fetchOpt
     onSearch={debounceFetcher}
     notFoundContent={fetching ? <Spin size="small" /> : null}
     {...props}
-    options={options}
+    options={options?.length ? options : initOptions}
   />
 }
 

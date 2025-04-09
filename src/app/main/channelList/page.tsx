@@ -17,10 +17,8 @@ import {
   Tag,
   Table,
   Button,
-  Row,
 } from "antd";
 import { requestPost, requestGet, requestPut } from "@/lib/api-client";
-// import PartnerMsgEdit from "@/components/PartnerMsgEdit";
 import {
   CommonType,
   CooperationStatusEnum,
@@ -112,28 +110,13 @@ export default function PartnerList() {
     ],
     []
   );
-
-    // 根据公司名获取产品
-    // const getProductsByChannelName = useCallback(async (channelName: string) => {
-    //   // const products = await requestGet("/products/listByChannelName", {name: channelName});
-  
-    //   // setProducts(products);
-    // },[])
-
   const updateItem = useCallback(async (record: PartnerChannelType) => {
-    // await getProductsByChannelName(record.name);
     setUpdateId(record.id)
     handleEditModal("UPDATE_OPEN");
     setInitValues({
       ...record,
-      products: record.products?.map(product => product.id),
+      // products: record.products?.map(product => product.id),
       contractDate: dayjs(record.contractDate) as unknown as Date,
-      // name: record.name,
-      // currentStatus: record.currentStatus,
-      // signCompony: record.signCompony,
-      // products: record.products,
-      // alias: record.alias,
-      // remark: record.remark
     });
   }, []);
 
@@ -177,8 +160,8 @@ export default function PartnerList() {
   const handleEditData = async (values: PartnerChannelType) => {
     try {
       setConfirmLoading(true);
-      await requestPost("/channels/create", values);
       if(openModalFormOpenStatus === "CREATE_OPEN") {
+        // await requestPost(`/channels/update${updateId}`, values);
         await requestPost("/channels/create", values);
       }
       if(openModalFormOpenStatus === "UPDATE_OPEN") {
@@ -286,21 +269,6 @@ export default function PartnerList() {
             }))}
           ></Select>
         </Form.Item>
-        {/* {openModalFormOpenStatus === "UPDATE_OPEN" && (
-          <Form.Item name="products" label="推广产品">
-            <Select
-              placeholder="请选择"
-              mode="multiple"
-              options={(products as ProductsType[]).map(
-                (value: ProductsType) => ({
-                  value: value.id,
-                  label: value.name,
-                })
-              )}
-            ></Select>
-          </Form.Item>
-        )} */}
-
         <Form.Item name="alias" label="渠道别名">
           <Input placeholder="请输入" />
         </Form.Item>
@@ -308,18 +276,6 @@ export default function PartnerList() {
           <Input.TextArea rows={6} />
         </Form.Item>
       </FormModal>
-      {/* 
-      <PartnerMsgEdit
-        status={handleStatus}
-        handleOk={handleEditModal}
-        modalTitle={ModalText[handleStatus]}
-        confirmLoading={confirmLoading}
-        onFinish={handleEditData}
-        initValues={initValues}
-        handleCancel={handleEditModal}
-        show={modalShow}
-      /> */}
-
       <Table<PartnerChannelType>
         pagination={{ showSizeChanger: true }}
         rowKey="id"

@@ -30,15 +30,29 @@ export enum CompanyEnum {
   QMYC = '青蔓优创', // 莘柏景泽
 }
 
+export interface ProductLinksType{
+  id: string;
+  name: string;
+}
+
 // 产品类型
 export interface ProductsType {
   id: string;
   name: string; // 产品名称
   company: PartnerChannelType; // 产品所属公司
   channel: PartnerChannelType[]; //推广产品的渠道
+  links: ProductLinksType[];
   createAt: Date;
   updateAt: Date;
   deletedAt: Date | null;
+}
+
+
+export interface ProductsFormType {
+  name: string; // 产品名称
+  company: string; // 产品所属公司
+  channel: string[]; //推广产品的渠道
+  links: string;
 }
 
 export interface ProductsSearchQueryType {
@@ -54,7 +68,7 @@ export interface PartnerChannelType {
   contractDate: Date;
   currentStatus: CooperationStatusEnum;
   signCompony: CompanyEnum;
-  products?: ProductsType[];
+  // products?: ProductsType[];
   alias?: string;
   remark?: string;
 }
@@ -67,10 +81,6 @@ export interface PartnerChannelQueryType {
   products?: string[];
   alias?: string;
 }
-// export enum ModalText {
-//   CREATE = "创建合作方",
-//   UPDATE = "修改合作方",
-// }
 
 export enum ModalFormText {
   CREATE_OPEN = "创建",

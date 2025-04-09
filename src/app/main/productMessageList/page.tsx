@@ -18,7 +18,7 @@ import {
   Table,
   Button,
 } from "antd";
-import { requestPost, requestGet } from "@/lib/api-client";
+import { requestPost, requestGet, requestPut } from "@/lib/api-client";
 import {
   CommonType,
   PartnerChannelType,
@@ -27,24 +27,26 @@ import {
   // ModalText,
   ModalFormText,
   ModalFormHandleStatus,
+  ProductsFormType,
 } from "@/type";
 
 const { RangePicker } = DatePicker;
 const { Item } = Form;
 export default function ProductList() {
-  const [searchPartnerValue, setSearchPartnerValue] = useState<OptionsType[]>(
-    []
-  );
+  const [updateId, setUpdateId] = useState<string>();
+  // const [updateRecord, setUpdateRecord] = useState<ProductsType>()
   const [dataSource, setDataSource] = useState<ProductsType[]>([]);
   const [modalShow, setModalShow] = useState<boolean>(false);
-  const [initValues, setInitValues] = useState<ProductsType>();
+  const [initValues, setInitValues] = useState<ProductsFormType>();
+  const [initPartnerOptions, setInitPartnerOptions] = useState<OptionsType[]>();
+  const [initChannelOptions, setInitChannelOptions] = useState<OptionsType[]>();
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>();
-  const [searchParams, setSearchParams] =
-    useState<ProductsSearchQueryType>();
-  // const [handleStatus, setHandleStatus] =
-  //   useState<keyof typeof ModalText>("CREATE");
-  const [openModalFormOpenStatus, setOpenModalFormOpenStatus] = useState<Exclude<ModalFormHandleStatus, "CLOSE" | "CONFIRM">>("CREATE_OPEN");
+  const [searchParams, setSearchParams] = useState<ProductsSearchQueryType>();
+  const [openModalFormOpenStatus, setOpenModalFormOpenStatus] =
+    useState<Exclude<ModalFormHandleStatus, "CLOSE" | "CONFIRM">>(
+      "CREATE_OPEN"
+    );
 
   const pathname = usePathname();
 
@@ -69,20 +71,23 @@ export default function ProductList() {
         title: "拥有链接",
         dataIndex: "links",
         key: "links",
-        render: (links: {id: string, name: string}[]) => links?.map((link) => <Tag key={link.id}>{link.name}</Tag>),
+        render: (links: { id: string; name: string }[]) =>
+          links?.map((link) => <Tag key={link.id}>{link.name}</Tag>),
       },
       {
         title: "所属公司",
         dataIndex: "company",
         key: "company",
-        render: (company: PartnerChannelType) => company.name
+        render: (company: PartnerChannelType) => company.name,
       },
       {
         title: "推广渠道",
         dataIndex: "channel",
         key: "channel",
         render: (channels: PartnerChannelType[]) =>
-          channels?.map((channel) => <Tag key={channel.id}>{channel.name}</Tag>),
+          channels?.map((channel) => (
+            <Tag key={channel.id}>{channel.name}</Tag>
+          )),
       },
 
       {
@@ -90,7 +95,9 @@ export default function ProductList() {
         key: "action",
         render: (_, record) => (
           <Space size="middle">
-            <Button onClick={() => updateItem(record)} type="link">修改</Button>
+            <Button onClick={() => updateItem(record)} type="link">
+              修改
+            </Button>
           </Space>
         ),
       },
@@ -100,7 +107,18 @@ export default function ProductList() {
 
   const updateItem = useCallback((record: ProductsType) => {
     handleEditModal("UPDATE_OPEN");
-    setInitValues(record);
+    const linkStrs = record.links.map((link) => link.name).join(",");
+    const channelOption = record.channel.map(item => ({value: item.id, label: item.name}));
+    setInitPartnerOptions([{value: record.company.id, label: record.company.name}]);
+    setInitChannelOptions(channelOption)
+    setUpdateId(record.id);
+    // setUpdateRecord(record)
+    setInitValues({
+      name: record.name,
+      links: linkStrs,
+      company: record?.company.id,
+      channel: record?.channel.map((item) => item.id),
+    });
   }, []);
 
   const getDataSource = useCallback(async () => {
@@ -125,37 +143,49 @@ export default function ProductList() {
     }
   }, [confirmLoading, getDataSource]);
 
+  const clearModalStatus = () => {
+    setInitChannelOptions([]);
+    setInitPartnerOptions([]);
+  }
+
   const handleEditModal = (
     handleType: ModalFormHandleStatus,
     form?: FormInstance
   ) => {
+    console.log(modalShow,345)
     if (handleType !== "CONFIRM") {
       setModalShow(!modalShow);
     }
-    if(handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
-      setOpenModalFormOpenStatus(handleType)
+    if (handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
+      setOpenModalFormOpenStatus(handleType);
     }
     if (handleType === "CONFIRM" && form) {
       form.submit();
     }
+    if(handleType !== 'UPDATE_OPEN') {
+      clearModalStatus();
+    }
   };
 
-  const handleEditData = async (values: ProductsType) => {
+  const handleEditData = async (values: ProductsFormType) => {
     try {
       setConfirmLoading(true);
-      await requestPost("/products/create", values);
+      if (openModalFormOpenStatus === "CREATE_OPEN") {
+        await requestPost("/products/create", values);
+      }
+      if (openModalFormOpenStatus === "UPDATE_OPEN") {
+        await requestPut(`/products/update/${updateId}`, values);
+      }
       setConfirmLoading(false);
       message.success("创建成功");
     } catch (error) {
       setConfirmLoading(false);
-      message.error('请求错误');
+      message.error("请求错误");
       console.log(error);
     }
   };
   const onSearch = async (values: CommonType) => {
-    setSearchParams(
-      values as unknown as ProductsSearchQueryType
-    );
+    setSearchParams(values as unknown as ProductsSearchQueryType);
   };
 
   const tableChange = (pagination: TablePaginationConfig) => {
@@ -202,12 +232,12 @@ export default function ProductList() {
         </Col>
         <Col span={8} key={"company"}>
           <Item name={`company`} label={`所属公司`}>
-            <DebounceSelect showSearch fetchOptions={searchCompany} />
+            <DebounceSelect allowClear showSearch fetchOptions={searchCompany} />
           </Item>
         </Col>
         <Col span={8} key={"channel"}>
           <Item name={`channel`} label={`推广渠道`}>
-            <DebounceSelect showSearch fetchOptions={searchChannel} />
+            <DebounceSelect allowClear showSearch fetchOptions={searchChannel} />
           </Item>
         </Col>
       </AdvancedSearchForm>
@@ -232,22 +262,28 @@ export default function ProductList() {
         handleCancel={handleEditModal}
         show={modalShow}
       >
-        <Form.Item name="name" label="产品名称">
+        <Form.Item name="name" required label="产品名称">
           <Input placeholder="请输入" />
         </Form.Item>
         <Form.Item name="links" label="拥有链接">
           <Input.TextArea placeholder="如果有多条链接，请使用英文逗号“,”分隔。" />
         </Form.Item>
-        <Form.Item name="company" label="所属公司">
+        <Form.Item name="company" required label="所属公司">
           <DebounceSelect
             showSearch
             placeholder="请输入搜索"
+            initOptions={initPartnerOptions}
             fetchOptions={searchCompany}
             style={{ width: "100%" }}
           />
         </Form.Item>
-        <Form.Item name="channel" label="推广渠道">
-          <DebounceSelect mode="multiple" placeholder="请输入搜索" fetchOptions={searchChannel} />
+        <Form.Item name="channel" required label="推广渠道">
+          <DebounceSelect
+            mode="multiple"
+            initOptions={initChannelOptions}
+            placeholder="请输入搜索"
+            fetchOptions={searchChannel}
+          />
         </Form.Item>
       </FormModal>
 
