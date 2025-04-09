@@ -1,7 +1,7 @@
 "use client";
-import React, { FC, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Form, Modal, theme, FormInstance } from "antd";
-import {ModalFormHandleStatus, PartnerChannelType, ProductsFormType } from "@/type";
+import {ModalFormHandleStatus } from "@/type";
 export interface FormModalProps<ValueType = unknown> {
   modalTitle: string;
   show: boolean;
