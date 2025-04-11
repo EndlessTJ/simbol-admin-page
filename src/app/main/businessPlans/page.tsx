@@ -35,7 +35,7 @@ import {
   BusinessPlansType,
   ProductLinksType,
   PlansStatus,
-  PlansIsDelete,
+  // PlansIsDelete,
   PlansPricingType,
   BusinessPlansFormType,
   BusinessPlansQueryType,
@@ -182,10 +182,10 @@ export default function BusinessPlans() {
     if (handleType === "CONFIRM" && form) {
       form
         .validateFields()
-        .then((values) => {
+        .then(() => {
           form.submit();
         })
-        .catch((errorInfo) => {});
+        .catch(() => {});
     }
     if (handleType !== "UPDATE_OPEN") {
       clearModalStatus();
