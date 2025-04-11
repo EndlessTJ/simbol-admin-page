@@ -89,7 +89,11 @@ export default function ProductList() {
             <Tag key={channel.id}>{channel.name}</Tag>
           )),
       },
-
+      {
+        title: "对接人",
+        dataIndex: "contactPerson",
+        key: "contactPerson",
+      },
       {
         title: "操作",
         key: "action",
@@ -116,6 +120,7 @@ export default function ProductList() {
     setInitValues({
       name: record.name,
       links: linkStrs,
+      contactPerson: record.contactPerson,
       company: record?.company.id,
       channel: record?.channel.map((item) => item.id),
     });
@@ -152,7 +157,6 @@ export default function ProductList() {
     handleType: ModalFormHandleStatus,
     form?: FormInstance
   ) => {
-    console.log(modalShow,345)
     if (handleType !== "CONFIRM") {
       setModalShow(!modalShow);
     }
@@ -263,6 +267,9 @@ export default function ProductList() {
         show={modalShow}
       >
         <Form.Item name="name" required label="产品名称">
+          <Input placeholder="请输入" />
+        </Form.Item>
+        <Form.Item name="contactPerson" label="对接人">
           <Input placeholder="请输入" />
         </Form.Item>
         <Form.Item name="links" label="拥有链接">

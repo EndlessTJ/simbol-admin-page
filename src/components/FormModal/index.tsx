@@ -1,16 +1,16 @@
 "use client";
 import React, { useEffect } from "react";
 import { Form, Modal, theme, FormInstance } from "antd";
-import {ModalFormHandleStatus } from "@/type";
+import {CommonType, ModalFormHandleStatus } from "@/type";
 export interface FormModalProps<ValueType = unknown> {
   modalTitle: string;
   show: boolean;
   confirmLoading: boolean;
   initValues?: ValueType;
-  // status: keyof typeof ModalFormText;
   handleOk: (handleType: ModalFormHandleStatus, form: FormInstance) => void;
   handleCancel: (handleType: ModalFormHandleStatus) => void;
   onFinish: (values: ValueType) => void;
+  onValuesChange?: (changedValues: CommonType, allValues: ValueType) => void;
   children: React.ReactNode;
 }
 
@@ -19,10 +19,10 @@ const FormModal = <ValueType,>({
   show,
   confirmLoading,
   initValues,
-  // status,
   handleCancel,
   handleOk,
   onFinish,
+  onValuesChange,
   children
 }:FormModalProps<ValueType>) => {
   const { token } = theme.useToken();
@@ -72,6 +72,7 @@ const FormModal = <ValueType,>({
         name="partner-edit"
         style={formStyle}
         onFinish={onFinish}
+        onValuesChange={onValuesChange}
         {...formItemLayout}
       >
         {children}

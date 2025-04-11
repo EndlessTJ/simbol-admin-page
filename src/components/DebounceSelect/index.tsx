@@ -44,6 +44,7 @@ const DebounceSelect: FC<DebounceSelectProps<PartnerChannelType>>  = ({ fetchOpt
   return <Select
     // labelInValue
     filterOption={false}
+    showSearch
     onSearch={debounceFetcher}
     notFoundContent={fetching ? <Spin size="small" /> : null}
     {...props}

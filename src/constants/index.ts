@@ -5,8 +5,6 @@ export enum CooperationStatus {
   terminated = '合作终止'
 }
 
-
-
 // 目前公司的主体
 
 export enum Company {
