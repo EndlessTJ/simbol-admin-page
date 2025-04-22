@@ -22,7 +22,6 @@ import {
   Input,
   DatePicker,
   TableProps,
-  Tag,
   Table,
   Button,
 } from "antd";
@@ -214,71 +213,74 @@ export default function BusinessPlans() {
         dataIndex: "name",
         key: "name",
         fixed: true,
-        width: '100px'
+        width: '180px'
       },
       {
         title: "状态",
         dataIndex: "status",
         key: "status",
+        width: '80px',
         render: (status: keyof typeof PlansStatus) => PlansStatus[status],
-      },
-      {
-        title: "开始时间",
-        dataIndex: "startDate",
-        key: "startDate",
-      },
-      {
-        title: "结束时间",
-        dataIndex: "endDate",
-        key: "endDate",
-      },
-      {
-        title: "所属产品",
-        dataIndex: "product",
-        key: "product",
-        render: (product: ProductsType) => (
-          <Tag key={product.id}>{product.name}</Tag>
-        ),
-      },
-      {
-        title: "投放链接",
-        dataIndex: "link",
-        key: "link",
-        render: (link: ProductLinksType) => link.name,
-      },
-      {
-        title: "投放渠道",
-        dataIndex: "channel",
-        key: "channel",
-        render: (channel: PartnerChannelType) => (
-          <Tag key={channel.id}>{channel.name}</Tag>
-        ),
-      },
-      {
-        title: "描述",
-        dataIndex: "description",
-        key: "description",
-        render: (description: string) => (
-          <Text type="secondary">{description}</Text>
-        ),
       },
       {
         title: "单价",
         dataIndex: "cost",
         key: "cost",
-        render: (cost: string) => cost,
+        width: '60px',
       },
       {
         title: "计价类型",
         dataIndex: "pricingType",
         key: "pricingType",
-        render: (pricingType: keyof typeof PlansPricingType) => (
-          <Tag>{PlansPricingType[pricingType]}</Tag>
+        width: '100px',
+        render: (pricingType: keyof typeof PlansPricingType) => PlansPricingType[pricingType]
+      },
+      {
+        title: "开始时间",
+        dataIndex: "startDate",
+        key: "startDate",
+        render: (startDate: Date) => dayjs(startDate).format('YYYY-MM-DD')
+      },
+      {
+        title: "结束时间",
+        dataIndex: "endDate",
+        key: "endDate",
+        render: (endDate: Date) => dayjs(endDate).format('YYYY-MM-DD')
+      },
+      {
+        title: "描述",
+        dataIndex: "description",
+        key: "description",
+        width: '180px',
+        render: (description: string) => (
+          <Text type="secondary">{description}</Text>
         ),
+      },
+      {
+        title: "所属产品",
+        dataIndex: "product",
+        key: "product",
+        width: '160px',
+        render: (product: ProductsType) => product.name,
+      },
+      {
+        title: "投放渠道",
+        dataIndex: "channel",
+        key: "channel",
+        width: '160px',
+        render: (channel: PartnerChannelType) => channel.name
+      },
+      {
+        title: "投放链接",
+        dataIndex: "link",
+        fixed: 'right',
+        key: "link",
+        render: (link: ProductLinksType) => link.name,
       },
       {
         title: "操作",
         key: "action",
+        fixed: 'right',
         render: (_, record) => (
           <Space size="middle">
             <Button onClick={() => updateItem(record)} type="link">
@@ -420,6 +422,7 @@ export default function BusinessPlans() {
 
       <Table<BusinessPlansType>
         loading={loading}
+        scroll={{ x: "max-content" }}
         pagination={{ showSizeChanger: true }}
         rowKey="id"
         onChange={tableChange}

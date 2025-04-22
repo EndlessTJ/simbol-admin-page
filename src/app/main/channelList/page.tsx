@@ -132,6 +132,8 @@ export default function PartnerList() {
         title: "渠道名",
         dataIndex: "name",
         key: "name",
+        fixed: true,
+        width: '180px'
       },
       {
         title: "签约日期",
@@ -142,6 +144,7 @@ export default function PartnerList() {
         title: "合作状态",
         dataIndex: "currentStatus",
         key: "currentStatus",
+        width: '100px',
         render: (currentStatus: cooperationType) =>
           CooperationStatusTextEnum[currentStatus],
       },
@@ -149,12 +152,14 @@ export default function PartnerList() {
         title: "推广产品",
         dataIndex: "products",
         key: "products",
+        width: '200px',
         render: (products: ProductsType[]) => products?.map(product => <Tag bordered={false} color="orange" key={product.id}>{product.name}</Tag>),
       },
       {
         title: "签约主体",
         key: "signCompony",
         dataIndex: "signCompony",
+        width: '100px',
         render: (value: CompanyEnum) => (
           <Tag color={value == "莘柏景泽" ? "geekblue" : "green"} key={value}>
             {value}
@@ -165,6 +170,7 @@ export default function PartnerList() {
         title: "别名",
         dataIndex: "alias",
         key: "alias",
+        width: '120px',
       },
       {
         title: "备注",
@@ -174,6 +180,7 @@ export default function PartnerList() {
       {
         title: "操作",
         key: "action",
+        fixed: 'right',
         render: (_, record) => (
           <Space size="middle">
             <Button onClick={() => updateItem(record)} type="link">
@@ -280,6 +287,7 @@ export default function PartnerList() {
         </Form.Item>
       </FormModal>
       <Table<PartnerChannelType>
+        scroll={{ x: "max-content" }}
         pagination={{ showSizeChanger: true }}
         rowKey="id"
         onChange={tableChange}

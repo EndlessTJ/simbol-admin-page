@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { FormInstance, message, Space, TablePaginationConfig } from "antd";
-// import dayjs from "dayjs";
+import dayjs from "dayjs";
 import { usePathname } from "next/navigation";
 import LocaleWrap from "@/components/LocaleConfigWrap";
 import AdvancedSearchForm from "@/components/AdvancedSearchForm";
@@ -166,38 +166,45 @@ export default function ProductList() {
         title: "产品名",
         dataIndex: "name",
         key: "name",
-      },
-      {
-        title: "创建时间",
-        dataIndex: "createAt",
-        key: "createAt",
-      },
-      {
-        title: "更新时间",
-        dataIndex: "updateAt",
-        key: "updateAt",
-      },
-      {
-        title: "拥有链接",
-        dataIndex: "links",
-        key: "links",
-        render: (links: { id: string; name: string }[]) =>
-          links?.map((link) => <Tag key={link.id}>{link.name}</Tag>),
+        fixed: true,
+        width: '180px'
       },
       {
         title: "所属公司",
         dataIndex: "company",
         key: "company",
+        // fixed: true,
+        width: '180px',
         render: (company: PartnerChannelType) => company.name,
       },
       {
         title: "推广渠道",
         dataIndex: "channel",
         key: "channel",
+        width: '180px',
         render: (channels: PartnerChannelType[]) =>
           channels?.map((channel) => (
             <Tag key={channel.id}>{channel.name}</Tag>
           )),
+      },
+      {
+        title: "创建时间",
+        dataIndex: "createAt",
+        key: "createAt",
+        render: (createAt: Date) => dayjs(createAt).format('YYYY-MM-DD')
+      },
+      // {
+      //   title: "更新时间",
+      //   dataIndex: "updateAt",
+      //   key: "updateAt",
+      // },
+      {
+        title: "拥有链接",
+        dataIndex: "links",
+        key: "links",
+        width: '280px',
+        render: (links: { id: string; name: string }[]) =>
+          links?.map((link) => <Tag key={link.id}>{link.name}</Tag>),
       },
       {
         title: "对接人",
@@ -207,6 +214,7 @@ export default function ProductList() {
       {
         title: "操作",
         key: "action",
+        fixed: 'right',
         render: (_, record) => (
           <Space size="middle">
             <Button onClick={() => updateItem(record)} type="link">
@@ -298,6 +306,7 @@ export default function ProductList() {
       </FormModal>
 
       <Table<ProductsType>
+        scroll={{ x: "max-content" }}
         pagination={{ showSizeChanger: true }}
         rowKey="id"
         onChange={tableChange}
