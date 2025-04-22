@@ -174,7 +174,7 @@ export default function ProductList() {
         dataIndex: "company",
         key: "company",
         // fixed: true,
-        width: '180px',
+        width: '200px',
         render: (company: PartnerChannelType) => company.name,
       },
       {

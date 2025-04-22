@@ -131,7 +131,7 @@ export default function PartnerList() {
         dataIndex: "name",
         key: "name",
         fixed: true,
-        width: '180px'
+        width: '200px'
       },
       {
         title: "签约日期",
@@ -174,6 +174,7 @@ export default function PartnerList() {
         title: "备注",
         dataIndex: "remark",
         key: "remark",
+        width: '200px',
       },
       {
         title: "操作",
