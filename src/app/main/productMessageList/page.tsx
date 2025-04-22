@@ -50,6 +50,116 @@ export default function ProductList() {
 
   const pathname = usePathname();
 
+  const handleEditModal = useCallback(
+    (
+      handleType: ModalFormHandleStatus,
+      form?: FormInstance
+    ) => {
+      if (handleType !== "CONFIRM") {
+        setModalShow(!modalShow);
+      }
+      if (handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
+        setOpenModalFormOpenStatus(handleType);
+      }
+      if (handleType === "CONFIRM" && form) {
+        form.submit();
+      }
+      if(handleType !== 'UPDATE_OPEN') {
+        clearModalStatus();
+      }
+    },
+    [modalShow],
+  )
+
+  const updateItem = useCallback((record: ProductsType) => {
+    handleEditModal("UPDATE_OPEN");
+    const linkStrs = record.links.map((link) => link.name).join(",");
+    const channelOption = record.channel.map(item => ({value: item.id, label: item.name}));
+    setInitPartnerOptions([{value: record.company.id, label: record.company.name}]);
+    setInitChannelOptions(channelOption)
+    setUpdateId(record.id);
+    // setUpdateRecord(record)
+    setInitValues({
+      name: record.name,
+      links: linkStrs,
+      contactPerson: record.contactPerson,
+      company: record?.company.id,
+      channel: record?.channel.map((item) => item.id),
+    });
+  }, [handleEditModal]);
+
+  const getDataSource = useCallback(async () => {
+    const data = await requestGet("/products/list", {
+      page: pagination?.current || 1,
+      limit: pagination?.size || 10,
+      sortBy: "createAt",
+      sortOrder: "ASC",
+      ...searchParams,
+    });
+    setDataSource(data);
+  }, [pagination, searchParams]);
+
+  useEffect(() => {
+    getDataSource();
+  }, [pathname, pagination, searchParams, getDataSource]);
+
+  useEffect(() => {
+    if (!confirmLoading) {
+      setModalShow(false);
+      getDataSource();
+    }
+  }, [confirmLoading, getDataSource]);
+
+  const clearModalStatus = () => {
+    setInitChannelOptions([]);
+    setInitPartnerOptions([]);
+  }
+
+  const handleEditData = async (values: ProductsFormType) => {
+    try {
+      setConfirmLoading(true);
+      if (openModalFormOpenStatus === "CREATE_OPEN") {
+        await requestPost("/products/create", values);
+      }
+      if (openModalFormOpenStatus === "UPDATE_OPEN") {
+        await requestPut(`/products/update/${updateId}`, values);
+      }
+      setConfirmLoading(false);
+      message.success("创建成功");
+    } catch (error) {
+      setConfirmLoading(false);
+      message.error("请求错误");
+      console.log(error);
+    }
+  };
+  const onSearch = async (values: CommonType) => {
+    setSearchParams(values as unknown as ProductsSearchQueryType);
+  };
+
+  const tableChange = (pagination: TablePaginationConfig) => {
+    setPagination(pagination);
+  };
+
+  const searchCompany = async (value: string): Promise<OptionsType[]> => {
+    const partners = await requestGet("/partners/listbyname", {
+      keyword: value,
+    });
+    return partners.map((item: PartnerChannelType) => ({
+      label: item.name,
+      value: item.id,
+    }));
+  };
+
+  const searchChannel = async (value: string): Promise<OptionsType[]> => {
+    const channels = await requestGet("/channels/listbyname", {
+      keyword: value,
+    });
+    return channels.map((item: PartnerChannelType) => ({
+      label: item.name,
+      value: item.id,
+    }));
+  };
+
   const columns: TableProps<ProductsType>["columns"] = useMemo(
     () => [
       {
@@ -106,115 +216,8 @@ export default function ProductList() {
         ),
       },
     ],
-    []
+    [updateItem]
   );
-
-  const updateItem = useCallback((record: ProductsType) => {
-    handleEditModal("UPDATE_OPEN");
-    const linkStrs = record.links.map((link) => link.name).join(",");
-    const channelOption = record.channel.map(item => ({value: item.id, label: item.name}));
-    setInitPartnerOptions([{value: record.company.id, label: record.company.name}]);
-    setInitChannelOptions(channelOption)
-    setUpdateId(record.id);
-    // setUpdateRecord(record)
-    setInitValues({
-      name: record.name,
-      links: linkStrs,
-      contactPerson: record.contactPerson,
-      company: record?.company.id,
-      channel: record?.channel.map((item) => item.id),
-    });
-  }, []);
-
-  const getDataSource = useCallback(async () => {
-    const data = await requestGet("/products/list", {
-      page: pagination?.current || 1,
-      limit: pagination?.size || 10,
-      sortBy: "createAt",
-      sortOrder: "ASC",
-      ...searchParams,
-    });
-    setDataSource(data);
-  }, [pagination, searchParams]);
-
-  useEffect(() => {
-    getDataSource();
-  }, [pathname, pagination, searchParams, getDataSource]);
-
-  useEffect(() => {
-    if (!confirmLoading) {
-      setModalShow(false);
-      getDataSource();
-    }
-  }, [confirmLoading, getDataSource]);
-
-  const clearModalStatus = () => {
-    setInitChannelOptions([]);
-    setInitPartnerOptions([]);
-  }
-
-  const handleEditModal = (
-    handleType: ModalFormHandleStatus,
-    form?: FormInstance
-  ) => {
-    if (handleType !== "CONFIRM") {
-      setModalShow(!modalShow);
-    }
-    if (handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
-      setOpenModalFormOpenStatus(handleType);
-    }
-    if (handleType === "CONFIRM" && form) {
-      form.submit();
-    }
-    if(handleType !== 'UPDATE_OPEN') {
-      clearModalStatus();
-    }
-  };
-
-  const handleEditData = async (values: ProductsFormType) => {
-    try {
-      setConfirmLoading(true);
-      if (openModalFormOpenStatus === "CREATE_OPEN") {
-        await requestPost("/products/create", values);
-      }
-      if (openModalFormOpenStatus === "UPDATE_OPEN") {
-        await requestPut(`/products/update/${updateId}`, values);
-      }
-      setConfirmLoading(false);
-      message.success("创建成功");
-    } catch (error) {
-      setConfirmLoading(false);
-      message.error("请求错误");
-      console.log(error);
-    }
-  };
-  const onSearch = async (values: CommonType) => {
-    setSearchParams(values as unknown as ProductsSearchQueryType);
-  };
-
-  const tableChange = (pagination: TablePaginationConfig) => {
-    setPagination(pagination);
-  };
-
-  const searchCompany = async (value: string): Promise<OptionsType[]> => {
-    const partners = await requestGet("/partners/listbyname", {
-      keyword: value,
-    });
-    return partners.map((item: PartnerChannelType) => ({
-      label: item.name,
-      value: item.id,
-    }));
-  };
-
-  const searchChannel = async (value: string): Promise<OptionsType[]> => {
-    const channels = await requestGet("/channels/listbyname", {
-      keyword: value,
-    });
-    return channels.map((item: PartnerChannelType) => ({
-      label: item.name,
-      value: item.id,
-    }));
-  };
 
   return (
     <LocaleWrap>

@@ -142,6 +142,67 @@ export interface BusinessPlansFormType {
   pricingType: PlansPricingType; //计价类型
 }
 
+// 结算单类型
+
+// 结算类型枚举
+export enum SettlementTypeEnum {
+  OUTGOING = 'OUTGOING', // 向外结算（主动支付给他人）
+  INCOMING = 'INCOMING', // 被别人结算（他人支付给我）
+}
+
+// 结算状态枚举
+export enum SettlementStatusEnum {
+  GENERATED = 'GENERATED', // 结算生成
+  INVOICED = 'INVOICED', // 已开票
+  PAID = 'PAID', // 已付款
+}
+// 结算状态枚举
+export enum SettlementStatusTextEnum {
+  GENERATED = '结算生成', // 
+  INVOICED = '已开票', // 
+  PAID = '已付款', // 
+}
+export interface SettlementType {
+  id: string;
+  settlementPartner?: PartnerChannelType; // 结算产品方Id
+  settlementChannel?: PartnerChannelType; // 结算渠道方Id
+  settlementEntity: CompanyEnum; // 结算主体
+  settlementType: SettlementTypeEnum;
+  amount: number; // 结算金额
+  startDate: Date; // 结算周期开始日期
+  endDate: Date; // 结算周期结束日期
+  settlementStatus: SettlementStatusEnum; // 结算单状态
+  number: number; // 结算数量
+  settlementProducts: ProductsType[]; // 结算产品
+  payDate: Date; // 支付日期
+  remark?: string;
+  invoiceRate: string; // 发票税率
+}
+export interface SettlementQueryType {
+  settlementPartnerId?: string; // 结算产品方Id
+  settlementChannelId?: string; // 结算渠道方Id
+  settlementType: SettlementTypeEnum;
+  startDate: Date; // 结算周期开始日期
+  endDate: Date; // 结算周期结束日期
+  settlementStatus: SettlementStatusEnum; // 结算单状态
+}
+
+export interface SettlementFormType {
+  settlementPartnerId?: string; // 结算产品方Id
+  settlementChannelId?: string; // 结算渠道方Id
+  settlementEntity: CompanyEnum; // 结算主体
+  settlementType: SettlementTypeEnum;
+  amount: number; // 结算金额
+  startDate?: Dayjs; // 结算周期开始日期
+  endDate?: Dayjs; // 结算周期结束日期
+  settlementPeriod: [Dayjs, Dayjs]
+  settlementStatus: SettlementStatusEnum; // 结算单状态
+  number: number; // 结算数量
+  settlementProductIds: string[]; // 结算产品Id
+  remark?: string;
+  invoiceRate: string; // 发票税率
+}
+
 export enum ModalFormText {
   CREATE_OPEN = "创建",
   UPDATE_OPEN = "修改",

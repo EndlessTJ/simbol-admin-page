@@ -30,7 +30,7 @@ const FormModal = <ValueType,>({
 
   useEffect(() => {
     form.setFieldsValue(initValues)
-  }, [initValues])
+  }, [form, initValues])
   
   const formStyle: React.CSSProperties = {
     maxWidth: "none",

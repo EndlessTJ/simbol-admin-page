@@ -51,6 +51,81 @@ export default function PartnerList() {
 
   const pathname = usePathname();
 
+  const handleEditModal = useCallback(
+    (
+      handleType: ModalFormHandleStatus,
+      form?: FormInstance
+    ) => {
+      if (handleType !== "CONFIRM") {
+        setModalShow(!modalShow);
+      }
+      if(handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
+        setOpenModalFormOpenStatus(handleType)
+      }
+      if (handleType === "CONFIRM" && form) {
+        form.submit();
+      }
+    },
+    [modalShow],
+  );
+  const updateItem = useCallback(async (record: PartnerChannelType) => {
+    setUpdateId(record.id)
+    handleEditModal("UPDATE_OPEN");
+    setInitValues({
+      ...record,
+      // products: record.products?.map(product => product.id),
+      contractDate: dayjs(record.contractDate) as unknown as Date,
+    });
+  }, [handleEditModal]);
+
+  const getDataSource = useCallback(async () => {
+    const data = await requestGet("/channels/list", {
+      page: pagination?.current || 1,
+      limit: pagination?.size || 10,
+      sortBy: "contractDate",
+      sortOrder: "ASC",
+      ...searchParams,
+    });
+    setDataSource(data);
+  }, [pagination, searchParams]);
+
+  useEffect(() => {
+    getDataSource();
+  }, [pathname, pagination, searchParams, getDataSource]);
+
+  useEffect(() => {
+    if (!confirmLoading) {
+      setModalShow(false);
+      getDataSource();
+    }
+  }, [confirmLoading, getDataSource]);
+
+  const handleEditData = async (values: PartnerChannelType) => {
+    try {
+      setConfirmLoading(true);
+      if(openModalFormOpenStatus === "CREATE_OPEN") {
+        // await requestPost(`/channels/update${updateId}`, values);
+        await requestPost("/channels/create", values);
+      }
+      if(openModalFormOpenStatus === "UPDATE_OPEN") {
+        await requestPut(`/channels/update/${updateId}`, values);
+      }
+      setConfirmLoading(false);
+      message.success("创建成功");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const onSearch = async (values: CommonType) => {
+    setSearchParams(
+      values as Omit<PartnerChannelType, "products" | "alias" | "remark">
+    );
+  };
+
+  const tableChange = (pagination: TablePaginationConfig) => {
+    setPagination(pagination);
+  };
+
   const columns: TableProps<PartnerChannelType>["columns"] = useMemo(
     () => [
       {
@@ -108,80 +183,8 @@ export default function PartnerList() {
         ),
       },
     ],
-    []
+    [updateItem]
   );
-  const updateItem = useCallback(async (record: PartnerChannelType) => {
-    setUpdateId(record.id)
-    handleEditModal("UPDATE_OPEN");
-    setInitValues({
-      ...record,
-      // products: record.products?.map(product => product.id),
-      contractDate: dayjs(record.contractDate) as unknown as Date,
-    });
-  }, []);
-
-  const getDataSource = useCallback(async () => {
-    const data = await requestGet("/channels/list", {
-      page: pagination?.current || 1,
-      limit: pagination?.size || 10,
-      sortBy: "contractDate",
-      sortOrder: "ASC",
-      ...searchParams,
-    });
-    setDataSource(data);
-  }, [pagination, searchParams]);
-
-  useEffect(() => {
-    getDataSource();
-  }, [pathname, pagination, searchParams, getDataSource]);
-
-  useEffect(() => {
-    if (!confirmLoading) {
-      setModalShow(false);
-      getDataSource();
-    }
-  }, [confirmLoading, getDataSource]);
-
-  const handleEditModal = (
-    handleType: ModalFormHandleStatus,
-    form?: FormInstance
-  ) => {
-    if (handleType !== "CONFIRM") {
-      setModalShow(!modalShow);
-    }
-    if(handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
-      setOpenModalFormOpenStatus(handleType)
-    }
-    if (handleType === "CONFIRM" && form) {
-      form.submit();
-    }
-  };
-
-  const handleEditData = async (values: PartnerChannelType) => {
-    try {
-      setConfirmLoading(true);
-      if(openModalFormOpenStatus === "CREATE_OPEN") {
-        // await requestPost(`/channels/update${updateId}`, values);
-        await requestPost("/channels/create", values);
-      }
-      if(openModalFormOpenStatus === "UPDATE_OPEN") {
-        await requestPut(`/channels/update/${updateId}`, values);
-      }
-      setConfirmLoading(false);
-      message.success("创建成功");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const onSearch = async (values: CommonType) => {
-    setSearchParams(
-      values as Omit<PartnerChannelType, "products" | "alias" | "remark">
-    );
-  };
-
-  const tableChange = (pagination: TablePaginationConfig) => {
-    setPagination(pagination);
-  };
   return (
     <LocaleWrap>
       <AdvancedSearchForm onFinish={onSearch}>

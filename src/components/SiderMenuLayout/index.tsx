@@ -9,7 +9,8 @@ import {
   FundViewOutlined,
   DashboardOutlined,
   LaptopOutlined,
-  ProductOutlined
+  ProductOutlined,
+  ContainerOutlined
 } from "@ant-design/icons";
 import { Button, Layout, Menu, theme } from "antd";
 import styles from "./index.module.scss";
@@ -24,7 +25,17 @@ const MENUITEM = [
   {
     key: "FUNDVIEW",
     icon: <FundViewOutlined />,
-    label:<Link href={`/main/fundList`}>财务数据</Link>,
+    label:'财务数据',
+    children: [
+      { key: 'FUNDLIST', label: <Link href={`/main/fundList`}>财务数据</Link>},
+      { key: 'SETTLEMENT', label: <Link href={`/main/settlement`}>结算数据</Link> },
+      // { key: 'PRODUCTSLIST', label: <Link href={`/main/productMessageList`}>甲方产品列表</Link> },
+    ]
+  },
+  {
+    key: "CONTRACT",
+    icon: <ContainerOutlined />,
+    label: <Link href={`/main/contract`}>合同管理</Link>,
   },
   {
     key: "PRODUCT",

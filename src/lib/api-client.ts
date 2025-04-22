@@ -44,5 +44,11 @@ export const requestPut = async (url: string, data: unknown) => {
   return response.data;
 }
 
+// 封装put请求方法
+export const requestDelete = async (url: string, params?: unknown) => {
+  const response = await request.delete(url, {params});
+  return response.data;
+}
+
 
 export default request;

@@ -6,6 +6,7 @@ import {
   Select,
   Space,
   TablePaginationConfig,
+  Typography,
 } from "antd";
 import _ from 'lodash';
 import dayjs from "dayjs";
@@ -35,7 +36,6 @@ import {
   BusinessPlansType,
   ProductLinksType,
   PlansStatus,
-  // PlansIsDelete,
   PlansPricingType,
   BusinessPlansFormType,
   BusinessPlansQueryType,
@@ -43,6 +43,7 @@ import {
 
 const { RangePicker } = DatePicker;
 const { Item } = Form;
+const { Text } = Typography;
 export default function BusinessPlans() {
   const [updateId, setUpdateId] = useState<string>();
   const [dataSource, setDataSource] = useState<BusinessPlansType[]>([]);
@@ -54,71 +55,38 @@ export default function BusinessPlans() {
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>();
   const [searchParams, setSearchParams] = useState<BusinessPlansQueryType>();
+  const [loading, setLoading] = useState<boolean>(false)
   const [openModalFormOpenStatus, setOpenModalFormOpenStatus] =
     useState<Exclude<ModalFormHandleStatus, "CLOSE" | "CONFIRM">>(
       "CREATE_OPEN"
     );
-
   const pathname = usePathname();
 
-  const columns: TableProps<BusinessPlansType>["columns"] = useMemo(
-    () => [
-      {
-        title: "名称",
-        dataIndex: "name",
-        key: "name",
-      },
-      {
-        title: "状态",
-        dataIndex: "status",
-        key: "status",
-        render: (status: keyof typeof PlansStatus) => PlansStatus[status],
-      },
-      {
-        title: "开始时间",
-        dataIndex: "startDate",
-        key: "startDate",
-      },
-      {
-        title: "结束时间",
-        dataIndex: "endDate",
-        key: "endDate",
-      },
-      {
-        title: "所属产品",
-        dataIndex: "product",
-        key: "product",
-        render: (product: ProductsType) => (
-          <Tag key={product.id}>{product.name}</Tag>
-        ),
-      },
-      {
-        title: "投放链接",
-        dataIndex: "link",
-        key: "link",
-        render: (link: ProductLinksType) => link.name,
-      },
-      {
-        title: "投放渠道",
-        dataIndex: "channel",
-        key: "channel",
-        render: (channel: PartnerChannelType) => (
-          <Tag key={channel.id}>{channel.name}</Tag>
-        ),
-      },
-      {
-        title: "操作",
-        key: "action",
-        render: (_, record) => (
-          <Space size="middle">
-            <Button onClick={() => updateItem(record)} type="link">
-              修改
-            </Button>
-          </Space>
-        ),
-      },
-    ],
-    []
+
+  const handleEditModal = useCallback(
+    (
+      handleType: ModalFormHandleStatus,
+      form?: FormInstance
+    ) => {
+      if (handleType !== "CONFIRM") {
+        setModalShow(!modalShow);
+      }
+      if (handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
+        setOpenModalFormOpenStatus(handleType);
+      }
+      if (handleType === "CONFIRM" && form) {
+        form
+          .validateFields()
+          .then(() => {
+            form.submit();
+          })
+          .catch(() => {});
+      }
+      if (handleType !== "UPDATE_OPEN") {
+        clearModalStatus();
+      }
+    },
+    [modalShow],
   );
 
   const updateItem = useCallback((record: BusinessPlansType) => {
@@ -139,9 +107,10 @@ export default function BusinessPlans() {
       cost: record.cost, //计划单价
       pricingType: record.pricingType, //计价类型
     });
-  }, []);
+  }, [handleEditModal]);
 
   const getDataSource = useCallback(async () => {
+    setLoading(true)
     const data = await requestGet("/plans/list", {
       page: pagination?.current || 1,
       limit: pagination?.size || 10,
@@ -149,6 +118,7 @@ export default function BusinessPlans() {
       sortOrder: "ASC",
       ...searchParams,
     });
+    setLoading(false)
     setDataSource(data);
   }, [pagination, searchParams]);
 
@@ -167,29 +137,6 @@ export default function BusinessPlans() {
     setInitChannelOptions([]);
     setInitProductsOptions([]);
     setLinkOptions([]);
-  };
-
-  const handleEditModal = (
-    handleType: ModalFormHandleStatus,
-    form?: FormInstance
-  ) => {
-    if (handleType !== "CONFIRM") {
-      setModalShow(!modalShow);
-    }
-    if (handleType === "CREATE_OPEN" || handleType === "UPDATE_OPEN") {
-      setOpenModalFormOpenStatus(handleType);
-    }
-    if (handleType === "CONFIRM" && form) {
-      form
-        .validateFields()
-        .then(() => {
-          form.submit();
-        })
-        .catch(() => {});
-    }
-    if (handleType !== "UPDATE_OPEN") {
-      clearModalStatus();
-    }
   };
 
   const handleEditData = async (values: BusinessPlansFormType) => {
@@ -259,6 +206,90 @@ export default function BusinessPlans() {
       }
     }, 600))()
   }
+
+  const columns: TableProps<BusinessPlansType>["columns"] = useMemo(
+    () => [
+      {
+        title: "名称",
+        dataIndex: "name",
+        key: "name",
+        fixed: true,
+        width: '100px'
+      },
+      {
+        title: "状态",
+        dataIndex: "status",
+        key: "status",
+        render: (status: keyof typeof PlansStatus) => PlansStatus[status],
+      },
+      {
+        title: "开始时间",
+        dataIndex: "startDate",
+        key: "startDate",
+      },
+      {
+        title: "结束时间",
+        dataIndex: "endDate",
+        key: "endDate",
+      },
+      {
+        title: "所属产品",
+        dataIndex: "product",
+        key: "product",
+        render: (product: ProductsType) => (
+          <Tag key={product.id}>{product.name}</Tag>
+        ),
+      },
+      {
+        title: "投放链接",
+        dataIndex: "link",
+        key: "link",
+        render: (link: ProductLinksType) => link.name,
+      },
+      {
+        title: "投放渠道",
+        dataIndex: "channel",
+        key: "channel",
+        render: (channel: PartnerChannelType) => (
+          <Tag key={channel.id}>{channel.name}</Tag>
+        ),
+      },
+      {
+        title: "描述",
+        dataIndex: "description",
+        key: "description",
+        render: (description: string) => (
+          <Text type="secondary">{description}</Text>
+        ),
+      },
+      {
+        title: "单价",
+        dataIndex: "cost",
+        key: "cost",
+        render: (cost: string) => cost,
+      },
+      {
+        title: "计价类型",
+        dataIndex: "pricingType",
+        key: "pricingType",
+        render: (pricingType: keyof typeof PlansPricingType) => (
+          <Tag>{PlansPricingType[pricingType]}</Tag>
+        ),
+      },
+      {
+        title: "操作",
+        key: "action",
+        render: (_, record) => (
+          <Space size="middle">
+            <Button onClick={() => updateItem(record)} type="link">
+              修改
+            </Button>
+          </Space>
+        ),
+      },
+    ],
+    [updateItem]
+  );
 
   return (
     <LocaleWrap>
@@ -388,6 +419,7 @@ export default function BusinessPlans() {
       </FormModal>
 
       <Table<BusinessPlansType>
+        loading={loading}
         pagination={{ showSizeChanger: true }}
         rowKey="id"
         onChange={tableChange}
