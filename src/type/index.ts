@@ -43,6 +43,7 @@ export interface ProductsType {
   company: PartnerChannelType; // 产品所属公司
   channel: PartnerChannelType[]; //推广产品的渠道
   links: ProductLinksType[];
+  remark?: string;
   contactPerson: string;
   createAt: Date;
   updateAt: Date;
@@ -56,6 +57,7 @@ export interface ProductsFormType {
   channel: string[]; //推广产品的渠道
   links: string;
   contactPerson: string;
+  remark?: string;
 }
 
 export interface ProductsSearchQueryType {
@@ -72,6 +74,9 @@ export interface PartnerChannelType {
   currentStatus: CooperationStatusEnum;
   signCompony: CompanyEnum;
   // products?: ProductsType[];
+  invoiceInfo?: string;
+  addressInfo?: string;
+  settlementPolicy?: string;
   alias?: string;
   remark?: string;
 }
@@ -201,6 +206,57 @@ export interface SettlementFormType {
   settlementProductIds: string[]; // 结算产品Id
   remark?: string;
   invoiceRate: string; // 发票税率
+}
+
+
+// 商务渠道
+export enum ChannelInfoListTypeEnum {
+  TMK = 'TMK', // tmk
+  INFORMATIONFLOW = '信息流', // 
+  WXG = '社群', // 
+  PRIVATEDOMAIN = '私域', // 
+  MSG = '短信', // 
+  LIVE = '直播', // 
+  SHORTVIDEO = '短视频', // 
+  SCHOOL = '入校', // 
+  TOOL = '工具', // 
+  OTHER = '其他', // 
+}
+
+export enum ChannelInfoListStatusEnum {
+  /** 待联系 - 尚未与对方建立联系 */
+  ToBeContacted = '待联系',
+
+  /** 沟通中 - 正在与对方进行洽谈或协商 */
+  InCommunication = '沟通中',
+
+  /** 已合作 - 已达成合作协议并建立合作关系 */
+  Cooperated = '已合作',
+
+  /** 暂未合作 - 当前阶段未能达成合作 */
+  NotCooperated = '暂未合作',
+}
+export interface BusinessInfoType {
+  id: string;
+  name: string;
+  type: keyof typeof ChannelInfoListTypeEnum;
+  contactInfo: string;
+  status: keyof typeof ChannelInfoListStatusEnum;
+  contactDate: Date;
+  remark: string;
+}
+
+export interface BusinessInfoFormType {
+  name: string;
+  type: keyof typeof ChannelInfoListTypeEnum;
+  contactInfo: string;
+  status: keyof typeof ChannelInfoListStatusEnum;
+  // contactDate: Date;
+  remark: string;
+}
+
+export interface BusinessInfoQueryType {
+  status: ChannelInfoListStatusEnum;
 }
 
 export enum ModalFormText {

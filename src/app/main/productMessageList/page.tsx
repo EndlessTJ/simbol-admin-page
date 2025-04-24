@@ -24,7 +24,6 @@ import {
   PartnerChannelType,
   ProductsType,
   ProductsSearchQueryType,
-  // ModalText,
   ModalFormText,
   ModalFormHandleStatus,
   ProductsFormType,
@@ -34,7 +33,6 @@ const { RangePicker } = DatePicker;
 const { Item } = Form;
 export default function ProductList() {
   const [updateId, setUpdateId] = useState<string>();
-  // const [updateRecord, setUpdateRecord] = useState<ProductsType>()
   const [dataSource, setDataSource] = useState<ProductsType[]>([]);
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<ProductsFormType>();
@@ -78,12 +76,12 @@ export default function ProductList() {
     setInitPartnerOptions([{value: record.company.id, label: record.company.name}]);
     setInitChannelOptions(channelOption)
     setUpdateId(record.id);
-    // setUpdateRecord(record)
     setInitValues({
       name: record.name,
       links: linkStrs,
       contactPerson: record.contactPerson,
       company: record?.company.id,
+      remark: record.remark,
       channel: record?.channel.map((item) => item.id),
     });
   }, [handleEditModal]);
@@ -212,6 +210,11 @@ export default function ProductList() {
         key: "contactPerson",
       },
       {
+        title: "备注",
+        dataIndex: "remark",
+        key: "remark",
+      },
+      {
         title: "操作",
         key: "action",
         fixed: 'right',
@@ -302,6 +305,9 @@ export default function ProductList() {
             placeholder="请输入搜索"
             fetchOptions={searchChannel}
           />
+        </Form.Item>
+        <Form.Item name="remark" label="备注">
+          <Input.TextArea rows={6} />
         </Form.Item>
       </FormModal>
 

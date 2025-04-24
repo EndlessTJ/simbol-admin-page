@@ -37,7 +37,7 @@ import { Company, CooperationStatus } from "@/constants";
 const { RangePicker } = DatePicker;
 const { Item } = Form;
 const { Option } = Select;
-export default function PartnerList() {
+export default function ChannelList() {
   const [dataSource, setDataSource] = useState<PartnerChannelType[]>([]);
   const [updateId, setUpdateId] = useState<string>();
   const [modalShow, setModalShow] = useState<boolean>(false);
@@ -173,6 +173,24 @@ export default function PartnerList() {
         width: '120px',
       },
       {
+        title: "结算政策",
+        dataIndex: "settlementPolicy",
+        key: "settlementPolicy",
+        width: '200px',
+      },
+      {
+        title: "开票信息",
+        dataIndex: "invoiceInfo",
+        key: "invoiceInfo",
+        width: '200px',
+      },
+      {
+        title: "通讯信息",
+        dataIndex: "addressInfo",
+        key: "addressInfo",
+        width: '200px',
+      },
+      {
         title: "备注",
         dataIndex: "remark",
         key: "remark",
@@ -282,6 +300,15 @@ export default function PartnerList() {
         </Form.Item>
         <Form.Item name="alias" label="渠道别名">
           <Input placeholder="请输入" />
+        </Form.Item>
+        <Form.Item name="invoiceInfo" label="开票信息">
+          <Input.TextArea rows={6} />
+        </Form.Item>
+        <Form.Item name="addressInfo" label="通讯信息">
+          <Input.TextArea rows={6} />
+        </Form.Item>
+        <Form.Item name="settlementPolicy" label="结算政策">
+          <Input.TextArea rows={6} />
         </Form.Item>
         <Form.Item name="remark" label="备注">
           <Input.TextArea rows={6} />

@@ -28,11 +28,7 @@ import {
   Table,
   Button,
 } from "antd";
-import {
-  requestPost,
-  requestGet,
-  requestPut,
-} from "@/lib/api-client";
+import { requestPost, requestGet, requestPut } from "@/lib/api-client";
 import {
   CommonType,
   PartnerChannelType,
@@ -100,8 +96,44 @@ export default function Settlement() {
     [modalShow]
   );
 
+  const editFormValuesChange = useCallback(
+    async (changedValues: CommonType) => {
+      if (
+        !changedValues.settlementPartnerId &&
+        !changedValues.settlementChannelId
+      ) {
+        return false;
+      }
+      _.debounce(async () => {
+        let productList;
+        if (
+          currentSettlementType === "INCOMING" &&
+          changedValues.settlementPartnerId
+        ) {
+          productList = await requestGet("/partners/productsByPartnerId", {
+            partnerId: changedValues.settlementPartnerId,
+          });
+        }
+        if (
+          currentSettlementType === "OUTGOING" &&
+          changedValues.settlementChannelId
+        ) {
+          productList = await requestGet("/channels/productsByChannelId", {
+            channelId: changedValues.settlementChannelId,
+          });
+        }
+        const productOptions = productList?.map((product: ProductsType) => ({
+          label: product.name,
+          value: product.id,
+        }));
+        setProductOptions(productOptions);
+      }, 600)();
+    },
+    [currentSettlementType]
+  );
+
   const updateItem = useCallback(
-    (record: SettlementType) => {
+    async (record: SettlementType) => {
       handleEditModal("UPDATE_OPEN");
       if (currentSettlementType === "INCOMING") {
         setInitChannelOptions([]);
@@ -111,6 +143,10 @@ export default function Settlement() {
             label: (record.settlementPartner as PartnerChannelType).name,
           },
         ]);
+        await editFormValuesChange({
+          settlementPartnerId: (record.settlementPartner as PartnerChannelType)
+            .id,
+        });
       }
 
       if (currentSettlementType === "OUTGOING") {
@@ -121,11 +157,15 @@ export default function Settlement() {
           },
         ]);
         setInitPartnerOptions([]);
+        await editFormValuesChange({
+          settlementChannelId: (record.settlementChannel as PartnerChannelType)
+            .id,
+        });
       }
-      const initProductOptions = record.settlementProducts.map(
-        (product: ProductsType) => ({ value: product.id, label: product.name })
-      );
-      setProductOptions(initProductOptions);
+      // const initProductOptions = record.settlementProducts.map(
+      //   (product: ProductsType) => ({ value: product.id, label: product.name })
+      // );
+      // setProductOptions(initProductOptions);
 
       setUpdateId(record.id);
       setInitValues({
@@ -144,7 +184,7 @@ export default function Settlement() {
         invoiceRate: record.invoiceRate, // 发票税率
       });
     },
-    [currentSettlementType, handleEditModal]
+    [currentSettlementType, editFormValuesChange, handleEditModal]
   );
 
   const getDataSource = useCallback(async () => {
@@ -252,39 +292,6 @@ export default function Settlement() {
     }));
   };
 
-  const editFormValuesChange = (changedValues: CommonType) => {
-    if (
-      !changedValues.settlementPartnerId &&
-      !changedValues.settlementChannelId
-    ) {
-      return false;
-    }
-    _.debounce(async () => {
-      let productList;
-      if (
-        currentSettlementType === "INCOMING" &&
-        changedValues.settlementPartnerId
-      ) {
-        productList = await requestGet("/partners/productsByPartnerId", {
-          partnerId: changedValues.settlementPartnerId,
-        });
-      }
-      if (
-        currentSettlementType === "OUTGOING" &&
-        changedValues.settlementChannelId
-      ) {
-        productList = await requestGet("/channels/productsByChannelId", {
-          channelId: changedValues.settlementChannelId,
-        });
-      }
-      const productOptions = productList?.map((product: ProductsType) => ({
-        label: product.name,
-        value: product.id,
-      }));
-      setProductOptions(productOptions);
-    }, 600)();
-  };
-
   const tabChange = (activeKey: string) => {
     setCurrentSettlementType(activeKey as keyof typeof SettlementTypeEnum);
   };
@@ -309,15 +316,18 @@ export default function Settlement() {
   );
 
   // 删除结算单
-  const deleteItem = useCallback(async (id: string) => {
-    try {
-      await requestPut(`/settlement/del/${id}`, {});
-      getDataSource()
-      message.success("删除成功")
-    } catch (error) {
-      throw error
-    }
-  }, [getDataSource]);
+  const deleteItem = useCallback(
+    async (id: string) => {
+      try {
+        await requestPut(`/settlement/del/${id}`, {});
+        getDataSource();
+        message.success("删除成功");
+      } catch (error) {
+        throw error;
+      }
+    },
+    [getDataSource]
+  );
 
   const columns: TableProps<SettlementType>["columns"] = useMemo(
     () => [
@@ -410,7 +420,9 @@ export default function Settlement() {
               title="确定要删除吗?"
               onConfirm={() => deleteItem(record.id)}
             >
-              <Button size="small"  type="link">删除</Button>
+              <Button size="small" type="link">
+                删除
+              </Button>
             </Popconfirm>
           </Space>
         ),
