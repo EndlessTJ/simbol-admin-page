@@ -79,7 +79,7 @@ export default function PartnerList() {
   const getDataSource = useCallback(async () => {
     const data = await requestGet("/partners/list", {
       page: pagination?.current || 1,
-      limit: pagination?.size || 10,
+      limit: pagination?.pageSize || 10,
       sortBy: "contractDate",
       sortOrder: "ASC",
       ...searchParams,

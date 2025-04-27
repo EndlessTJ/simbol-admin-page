@@ -112,7 +112,7 @@ export default function BusinessPlans() {
     setLoading(true)
     const data = await requestGet("/plans/list", {
       page: pagination?.current || 1,
-      limit: pagination?.size || 10,
+      limit: pagination?.pageSize || 10,
       sortBy: "createAt",
       sortOrder: "ASC",
       ...searchParams,

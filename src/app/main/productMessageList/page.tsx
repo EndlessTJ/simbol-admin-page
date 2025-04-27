@@ -89,7 +89,7 @@ export default function ProductList() {
   const getDataSource = useCallback(async () => {
     const data = await requestGet("/products/list", {
       page: pagination?.current || 1,
-      limit: pagination?.size || 10,
+      limit: pagination?.pageSize || 10,
       sortBy: "createAt",
       sortOrder: "ASC",
       ...searchParams,

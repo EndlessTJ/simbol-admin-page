@@ -74,7 +74,7 @@ export default function BussinessInfoList() {
   const getDataSource = useCallback(async () => {
     const data = await requestGet("/channel-info-list/list", {
       page: pagination?.current || 1,
-      limit: pagination?.size || 10,
+      limit: pagination?.pageSize || 10,
       sortBy: "contactDate",
       sortOrder: "ASC",
       ...searchParams,

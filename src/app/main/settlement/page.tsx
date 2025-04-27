@@ -96,40 +96,44 @@ export default function Settlement() {
     [modalShow]
   );
 
+  const getProductByCompany = useCallback((changedValues: CommonType) => {
+    return (_.debounce(async () => {
+      let productList;
+      if (
+        currentSettlementType === "INCOMING" &&
+        changedValues.settlementPartnerId
+      ) {
+        productList = await requestGet("/partners/productsByPartnerId", {
+          partnerId: changedValues.settlementPartnerId,
+        });
+      }
+      if (
+        currentSettlementType === "OUTGOING" &&
+        changedValues.settlementChannelId
+      ) {
+        productList = await requestGet("/channels/productsByChannelId", {
+          channelId: changedValues.settlementChannelId,
+        });
+      }
+      const productOptions = productList?.map((product: ProductsType) => ({
+        label: product.name,
+        value: product.id,
+      }));
+      setProductOptions(productOptions);
+    }, 600))();
+  }, [currentSettlementType]);
+
   const editFormValuesChange = useCallback(
     async (changedValues: CommonType) => {
       if (
-        !changedValues.settlementPartnerId &&
-        !changedValues.settlementChannelId
+        changedValues.settlementPartnerId ||
+        changedValues.settlementChannelId
       ) {
-        return false;
+        getProductByCompany(changedValues);
       }
-      _.debounce(async () => {
-        let productList;
-        if (
-          currentSettlementType === "INCOMING" &&
-          changedValues.settlementPartnerId
-        ) {
-          productList = await requestGet("/partners/productsByPartnerId", {
-            partnerId: changedValues.settlementPartnerId,
-          });
-        }
-        if (
-          currentSettlementType === "OUTGOING" &&
-          changedValues.settlementChannelId
-        ) {
-          productList = await requestGet("/channels/productsByChannelId", {
-            channelId: changedValues.settlementChannelId,
-          });
-        }
-        const productOptions = productList?.map((product: ProductsType) => ({
-          label: product.name,
-          value: product.id,
-        }));
-        setProductOptions(productOptions);
-      }, 600)();
+      console.log(changedValues,66666)
     },
-    [currentSettlementType]
+    [getProductByCompany]
   );
 
   const updateItem = useCallback(
@@ -162,10 +166,6 @@ export default function Settlement() {
             .id,
         });
       }
-      // const initProductOptions = record.settlementProducts.map(
-      //   (product: ProductsType) => ({ value: product.id, label: product.name })
-      // );
-      // setProductOptions(initProductOptions);
 
       setUpdateId(record.id);
       setInitValues({
@@ -189,9 +189,10 @@ export default function Settlement() {
 
   const getDataSource = useCallback(async () => {
     setLoading(true);
+
     const data = await requestGet("/settlement/list", {
       page: pagination?.current || 1,
-      limit: pagination?.size || 10,
+      limit: pagination?.pageSize || 10,
       sortBy: "createAt",
       sortOrder: "ASC",
       ...searchParams,
@@ -270,6 +271,7 @@ export default function Settlement() {
   };
 
   const tableChange = (pagination: TablePaginationConfig) => {
+    console.log(pagination, 6666)
     setPagination(pagination);
   };
 

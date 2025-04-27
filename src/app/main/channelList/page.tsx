@@ -81,7 +81,7 @@ export default function ChannelList() {
   const getDataSource = useCallback(async () => {
     const data = await requestGet("/channels/list", {
       page: pagination?.current || 1,
-      limit: pagination?.size || 10,
+      limit: pagination?.pageSize || 10,
       sortBy: "contractDate",
       sortOrder: "ASC",
       ...searchParams,
