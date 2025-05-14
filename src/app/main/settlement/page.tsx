@@ -260,7 +260,7 @@ export default function Settlement() {
     try {
       setConfirmLoading(true);
       const productAmount = Object.keys(values).filter((item) => item.includes('productAmount_')).map((key) => ({productId: key.split('_')[1], amount: parseFloat(values[key as keyof SettlementFormType] as string) }));
-      if(productAmount.reduce((acc, cur ) => (acc + cur.amount), 0) !== values.amount) {
+      if( productAmount.reduce((acc, cur ) => (acc + cur.amount), 0) !== parseFloat(values.amount as unknown as string) ) {
         message.error('产品金额之和不等于总金额');
         setConfirmLoading(false);
         return false;
