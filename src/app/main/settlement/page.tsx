@@ -1,15 +1,5 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  FormInstance,
-  message,
-  Popconfirm,
-  Select,
-  Space,
-  TablePaginationConfig,
-  Tabs,
-  // Typography,
-} from "antd";
 import _ from "lodash";
 import dayjs from "dayjs";
 import { usePathname } from "next/navigation";
@@ -19,6 +9,14 @@ import DebounceSelect, { OptionsType } from "@/components/DebounceSelect";
 import SearchActionWrap from "@/components/SearchActionWrap";
 import FormModal from "@/components/FormModal";
 import {
+  FormInstance,
+  InputNumber,
+  message,
+  Popconfirm,
+  Select,
+  Space,
+  TablePaginationConfig,
+  Tabs,
   Col,
   Form,
   Input,
@@ -61,7 +59,7 @@ export default function Settlement() {
   const [initChannelOptions, setInitChannelOptions] = useState<OptionsType[]>();
   const [initPartnerOptions, setInitPartnerOptions] = useState<OptionsType[]>();
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
-  // const [settlementStatusValue, setSettlementStatusValue] = useState<>()
+  const [selectedProducts, setSelectedProducts] = useState<OptionsType[]>([]);
   const [pagination, setPagination] = useState<TablePaginationConfig>();
   const [searchParams, setSearchParams] = useState<SettlementQueryType>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -89,39 +87,42 @@ export default function Settlement() {
           })
           .catch(() => {});
       }
-      if (handleType !== "UPDATE_OPEN") {
+      if (handleType !== "UPDATE_OPEN" && handleType !== "CONFIRM") {
         clearModalStatus();
       }
     },
     [modalShow]
   );
 
-  const getProductByCompany = useCallback((changedValues: CommonType) => {
-    return (_.debounce(async () => {
-      let productList;
-      if (
-        currentSettlementType === "INCOMING" &&
-        changedValues.settlementPartnerId
-      ) {
-        productList = await requestGet("/partners/productsByPartnerId", {
-          partnerId: changedValues.settlementPartnerId,
-        });
-      }
-      if (
-        currentSettlementType === "OUTGOING" &&
-        changedValues.settlementChannelId
-      ) {
-        productList = await requestGet("/channels/productsByChannelId", {
-          channelId: changedValues.settlementChannelId,
-        });
-      }
-      const productOptions = productList?.map((product: ProductsType) => ({
-        label: product.name,
-        value: product.id,
-      }));
-      setProductOptions(productOptions);
-    }, 600))();
-  }, [currentSettlementType]);
+  const getProductByCompany = useCallback(
+    (changedValues: CommonType) => {
+      return _.debounce(async () => {
+        let productList;
+        if (
+          currentSettlementType === "INCOMING" &&
+          changedValues.settlementPartnerId
+        ) {
+          productList = await requestGet("/partners/productsByPartnerId", {
+            partnerId: changedValues.settlementPartnerId,
+          });
+        }
+        if (
+          currentSettlementType === "OUTGOING" &&
+          changedValues.settlementChannelId
+        ) {
+          productList = await requestGet("/channels/productsByChannelId", {
+            channelId: changedValues.settlementChannelId,
+          });
+        }
+        const productOptions = productList?.map((product: ProductsType) => ({
+          label: product.name,
+          value: product.id,
+        }));
+        setProductOptions(productOptions);
+      }, 600)();
+    },
+    [currentSettlementType]
+  );
 
   const editFormValuesChange = useCallback(
     async (changedValues: CommonType) => {
@@ -131,9 +132,23 @@ export default function Settlement() {
       ) {
         getProductByCompany(changedValues);
       }
-      console.log(changedValues,66666)
+      if (
+        (changedValues as { settlementProductIds: string[] })
+          .settlementProductIds?.length
+      ) {
+        _.debounce(async () => {
+          const settlementProducts = (
+            changedValues as { settlementProductIds: string[] }
+          ).settlementProductIds.map((value) => {
+            return productOptions?.find((el) => el.value === value);
+          });
+          setSelectedProducts((settlementProducts as OptionsType[]) || []);
+        }, 300)();
+
+        // setSelectedProducts(changedValues.settlementProductIds as string[]);
+      }
     },
-    [getProductByCompany]
+    [getProductByCompany, productOptions]
   );
 
   const updateItem = useCallback(
@@ -165,24 +180,35 @@ export default function Settlement() {
           settlementChannelId: (record.settlementChannel as PartnerChannelType)
             .id,
         });
-      }
-
+      };
+      const productObj = {} as {[key: string]: string}; // 产品金额的初始值
+      const productAmountValue = {} as {[key: string]: string};// 产品金额输入项数据
+      record.settlementProducts.forEach((item) => { productObj[item.id] = item.name})
+      const curSelectedProducts = record.productAmount?.map(item => {
+        productAmountValue[`productAmount_${item.productId}`] = item.amount.toString();
+        return {value: item.productId, label: productObj[item.productId]};
+      })
+      setSelectedProducts(curSelectedProducts || []);
+      
       setUpdateId(record.id);
-      setInitValues({
-        settlementPartnerId: record?.settlementPartner?.id, // 结算产品方Id
-        settlementChannelId: record?.settlementChannel?.id, // 结算渠道方Id
-        settlementEntity: record.settlementEntity, // 结算主体
-        settlementType: record.settlementType,
-        amount: record.amount, // 结算金额
-        settlementPeriod: [dayjs(record.startDate), dayjs(record.endDate)], // 结算金额
-        settlementStatus: record.settlementStatus, // 结算单状态
-        number: record.number, // 结算数量
-        settlementProductIds: record.settlementProducts.map(
-          (product) => product.id
-        ), // 结算产品Id
-        remark: record.remark,
-        invoiceRate: record.invoiceRate, // 发票税率
-      });
+      // setTimeout(() => {
+        setInitValues({
+          settlementPartnerId: record?.settlementPartner?.id, // 结算产品方Id
+          settlementChannelId: record?.settlementChannel?.id, // 结算渠道方Id
+          settlementEntity: record.settlementEntity, // 结算主体
+          settlementType: record.settlementType,
+          amount: record.amount, // 结算金额
+          settlementPeriod: [dayjs(record.startDate), dayjs(record.endDate)], // 结算金额
+          settlementStatus: record.settlementStatus, // 结算单状态
+          number: record.number, // 结算数量
+          settlementProductIds: record.settlementProducts.map(
+            (product) => product.id
+          ), // 结算产品Id
+          remark: record.remark,
+          invoiceRate: record.invoiceRate, // 发票税率
+          ...productAmountValue
+        });
+      // });
     },
     [currentSettlementType, editFormValuesChange, handleEditModal]
   );
@@ -227,15 +253,23 @@ export default function Settlement() {
     setInitChannelOptions([]);
     setInitPartnerOptions([]);
     setProductOptions([]);
+    setSelectedProducts([]);
   };
 
   const handleEditData = async (values: SettlementFormType) => {
     try {
       setConfirmLoading(true);
+      const productAmount = Object.keys(values).filter((item) => item.includes('productAmount_')).map((key) => ({productId: key.split('_')[1], amount: parseFloat(values[key as keyof SettlementFormType] as string) }));
+      if(productAmount.reduce((acc, cur ) => (acc + cur.amount), 0) !== values.amount) {
+        message.error('产品金额之和不等于总金额');
+        setConfirmLoading(false);
+        return false;
+      }
       const settlementPayload = {
         settlementEntity: values.settlementEntity, // 结算主体
         settlementType: currentSettlementType,
         amount: values.amount, // 结算金额
+        productAmount,
         startDate: values.settlementPeriod[0], // 结算周期开始日期
         endDate: values.settlementPeriod[1], // 结算周期结束日期
         settlementStatus: values.settlementStatus, // 结算单状态
@@ -259,6 +293,7 @@ export default function Settlement() {
         await requestPut(`/settlement/update/${updateId}`, settlementPayload);
       }
       setConfirmLoading(false);
+      clearModalStatus();
       message.success("创建成功");
     } catch (error) {
       setConfirmLoading(false);
@@ -271,7 +306,6 @@ export default function Settlement() {
   };
 
   const tableChange = (pagination: TablePaginationConfig) => {
-    console.log(pagination, 6666)
     setPagination(pagination);
   };
 
@@ -361,8 +395,10 @@ export default function Settlement() {
         dataIndex: "settlementProducts",
         key: "settlementProducts",
         width: "200px",
-        render: (products: ProductsType[]) =>
-          products.map((product) => <Tag key={product.id}>{product.name}</Tag>),
+        render: (products: ProductsType[], record) => {
+          const amountObj = record.productAmount?.reduce((acc, cur) => { acc[cur.productId] = cur.amount; return acc}, {} as {[key: string]: number})
+          return products.map((product) => <Tag key={product.id}>{amountObj ? `${product.name} ¥${amountObj?.[product.id]}` : product.name}</Tag>)
+        }
       },
       {
         title: "支付日期",
@@ -607,16 +643,6 @@ export default function Settlement() {
           </Form.Item>
         ) : null}
 
-        {/* <Form.Item name="settlementType" required label="结算类型">
-          <Select
-            placeholder="请选择"
-            options={[
-              { value: "OUTGOING", label: "产品结算(收入)" },
-              { value: "INCOMING", label: "渠道结算（支出）" },
-            ]}
-          ></Select>
-        </Form.Item> */}
-
         <Form.Item name="settlementProductIds" required label="结算产品">
           <Select
             mode="multiple"
@@ -626,15 +652,30 @@ export default function Settlement() {
           ></Select>
         </Form.Item>
 
+        {selectedProducts.map((item) => (
+          <Form.Item
+            labelCol={{ xs: { span: 24 }, sm: { span: 12 } }}
+            wrapperCol={{ xs: { span: 24 }, sm: { span: 12 } }}
+            key={item.value}
+            name={`productAmount_${item.value}`}
+            required
+            label={`${item.label}金额`}
+          >
+            <InputNumber size="small" prefix="￥" style={{ width: "100%" }} />
+          </Form.Item>
+        ))}
+
         <Form.Item name="settlementPeriod" label="结算周期">
           <RangePicker />
         </Form.Item>
 
-        <Form.Item name="amount" required label="结算金额">
-          <Input placeholder="请输入" />
+        <Form.Item name="amount" required label="总金额">
+          {/* <Input placeholder="请输入" /> */}
+          <InputNumber prefix="￥" style={{ width: "100%" }} />
         </Form.Item>
         <Form.Item name="number" required label="结算数量">
-          <Input placeholder="请输入" />
+          {/* <Input placeholder="请输入" /> */}
+          <InputNumber style={{ width: "100%" }} />
         </Form.Item>
         <Form.Item name="invoiceRate" label="发票税率">
           <Input.TextArea placeholder="请输入" />

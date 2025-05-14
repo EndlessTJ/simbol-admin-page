@@ -173,6 +173,10 @@ export interface SettlementType {
   settlementChannel?: PartnerChannelType; // 结算渠道方Id
   settlementEntity: CompanyEnum; // 结算主体
   settlementType: SettlementTypeEnum;
+  productAmount?: Array<{
+    productId: string;
+    amount: number;
+  }>;
   amount: number; // 结算金额
   startDate: Date; // 结算周期开始日期
   endDate: Date; // 结算周期结束日期
@@ -201,6 +205,10 @@ export interface SettlementFormType {
   startDate?: Dayjs; // 结算周期开始日期
   endDate?: Dayjs; // 结算周期结束日期
   settlementPeriod: [Dayjs, Dayjs]
+  productAmount?: Array<{
+    productId: string;
+    amount: number;
+  }>;
   settlementStatus: SettlementStatusEnum; // 结算单状态
   number: number; // 结算数量
   settlementProductIds: string[]; // 结算产品Id

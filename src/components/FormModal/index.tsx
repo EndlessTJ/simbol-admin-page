@@ -29,7 +29,7 @@ const FormModal = <ValueType,>({
   const [form] = Form.useForm();
 
   useEffect(() => {
-    form.setFieldsValue(initValues)
+    form.setFieldsValue(initValues);
   }, [form, initValues])
   
   const formStyle: React.CSSProperties = {

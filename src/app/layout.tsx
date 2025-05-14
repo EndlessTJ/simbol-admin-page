@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import '@ant-design/v5-patch-for-react-19'; // 补丁，让antd支持react19
+import type { Metadata } from "next";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import localFont from "next/font/local";
 // import { headers } from 'next/headers';
