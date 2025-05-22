@@ -5,6 +5,15 @@ export interface CommonType {
   [key: string]: unknown;
 }
 
+export interface PaginatedResult<T> {
+  list: T[];
+  meta: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+}
 
 // 分页类型
 export interface paginationType {

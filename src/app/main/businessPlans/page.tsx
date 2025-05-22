@@ -38,6 +38,7 @@ import {
   PlansPricingType,
   BusinessPlansFormType,
   BusinessPlansQueryType,
+  PaginatedResult,
 } from "@/type";
 
 const { RangePicker } = DatePicker;
@@ -46,6 +47,7 @@ const { Text } = Typography;
 export default function BusinessPlans() {
   const [updateId, setUpdateId] = useState<string>();
   const [dataSource, setDataSource] = useState<BusinessPlansType[]>([]);
+  const [dataSourceCount, setDataSourceCount] = useState<number>(0);
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<BusinessPlansFormType>();
   const [initProductsOptions, setInitProductsOptions] = useState<OptionsType[]>();
@@ -108,9 +110,28 @@ export default function BusinessPlans() {
     });
   }, [handleEditModal]);
 
+  const copyItem = useCallback((record: BusinessPlansType) => {
+    handleEditModal("CREATE_OPEN");
+    setInitProductsOptions([{value: record.product.id, label: record.product.name}]);
+    setInitChannelOptions([{value: record.channel.id, label: record.channel.name}]);
+    setLinkOptions([{value: record.link.id, label: record.link.name}])
+    setInitValues({
+      name: record.name, // 计划名称
+      startDate: dayjs(record.startDate), // 计划开始时间
+      endDate: dayjs(record.endDate), // 计划结束时间
+      status: record.status, //计划状态
+      productId: record.product.id, // 所属产品id
+      channelId: record.channel.id, // 投放的渠道Id
+      link: record.link.id, // 产品链接
+      description: record.description, // 计划描述
+      cost: record.cost, //计划单价
+      pricingType: record.pricingType, //计价类型
+    });
+  }, [handleEditModal]);
+
   const getDataSource = useCallback(async () => {
     setLoading(true)
-    const data = await requestGet("/plans/list", {
+    const data = await requestGet<PaginatedResult<BusinessPlansType>>("/plans/list", {
       page: pagination?.current || 1,
       limit: pagination?.pageSize || 10,
       sortBy: "createAt",
@@ -118,7 +139,8 @@ export default function BusinessPlans() {
       ...searchParams,
     });
     setLoading(false)
-    setDataSource(data);
+    setDataSource(data.list);
+    setDataSourceCount(data.meta.total)
   }, [pagination, searchParams]);
 
   useEffect(() => {
@@ -164,7 +186,7 @@ export default function BusinessPlans() {
   };
 
   const searchProducts = async (value: string): Promise<OptionsType[]> => {
-    const products = await requestGet("/products/productListByName", {
+    const products = await requestGet<ProductsType[]>("/products/productListByName", {
       keyword: value,
     });
     return products.map((item: ProductsType) => ({
@@ -173,7 +195,7 @@ export default function BusinessPlans() {
     }));
   };
   const searchChannel = async (value: string): Promise<OptionsType[]> => {
-    const channels = await requestGet("/channels/listbyname", {
+    const channels = await requestGet<PartnerChannelType[]>("/channels/listbyname", {
       keyword: value,
     });
     return channels.map((item: PartnerChannelType) => ({
@@ -183,7 +205,7 @@ export default function BusinessPlans() {
   };
 
   const searchProductLink = async (value: string): Promise<OptionsType[]> => {
-    const productLink = await requestGet("/products/linkListByName", {
+    const productLink = await requestGet<ProductLinksType[]>("/products/linkListByName", {
       // 修改
       keyword: value,
     });
@@ -196,7 +218,7 @@ export default function BusinessPlans() {
   const editFormValuesChange = (changedValues: CommonType) => {
     (_.debounce(async () => {
       if(changedValues.productId) {
-        const linkList = await requestGet("/products/linkListByProductId", {
+        const linkList = await requestGet<ProductLinksType[]>("/products/linkListByProductId", {
           // 修改
           productId: changedValues.productId,
         });
@@ -285,6 +307,9 @@ export default function BusinessPlans() {
           <Space size="middle">
             <Button onClick={() => updateItem(record)} type="link">
               修改
+            </Button>
+            <Button onClick={() => copyItem(record)} type="link">
+              复制一条
             </Button>
           </Space>
         ),
@@ -423,7 +448,7 @@ export default function BusinessPlans() {
       <Table<BusinessPlansType>
         loading={loading}
         scroll={{ x: "max-content" }}
-        pagination={{ showSizeChanger: true }}
+        pagination={{ showSizeChanger: true, total: dataSourceCount }}
         rowKey="id"
         onChange={tableChange}
         columns={columns}

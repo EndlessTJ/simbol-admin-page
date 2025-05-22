@@ -27,6 +27,7 @@ import {
   ModalFormText,
   ModalFormHandleStatus,
   ProductsFormType,
+  PaginatedResult,
 } from "@/type";
 
 const { RangePicker } = DatePicker;
@@ -34,6 +35,7 @@ const { Item } = Form;
 export default function ProductList() {
   const [updateId, setUpdateId] = useState<string>();
   const [dataSource, setDataSource] = useState<ProductsType[]>([]);
+  const [dataSourceCount, setDataSourceCount] = useState<number>(0);
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<ProductsFormType>();
   const [initPartnerOptions, setInitPartnerOptions] = useState<OptionsType[]>();
@@ -87,14 +89,15 @@ export default function ProductList() {
   }, [handleEditModal]);
 
   const getDataSource = useCallback(async () => {
-    const data = await requestGet("/products/list", {
+    const data = await requestGet<PaginatedResult<ProductsType>>("/products/list", {
       page: pagination?.current || 1,
       limit: pagination?.pageSize || 10,
       sortBy: "createAt",
       sortOrder: "ASC",
       ...searchParams,
     });
-    setDataSource(data);
+    setDataSource(data.list);
+    setDataSourceCount(data.meta.total)
   }, [pagination, searchParams]);
 
   useEffect(() => {
@@ -139,7 +142,7 @@ export default function ProductList() {
   };
 
   const searchCompany = async (value: string): Promise<OptionsType[]> => {
-    const partners = await requestGet("/partners/listbyname", {
+    const partners = await requestGet<PartnerChannelType[]>("/partners/listbyname", {
       keyword: value,
     });
     return partners.map((item: PartnerChannelType) => ({
@@ -149,7 +152,7 @@ export default function ProductList() {
   };
 
   const searchChannel = async (value: string): Promise<OptionsType[]> => {
-    const channels = await requestGet("/channels/listbyname", {
+    const channels = await requestGet<PartnerChannelType[]>("/channels/listbyname", {
       keyword: value,
     });
     return channels.map((item: PartnerChannelType) => ({
@@ -313,7 +316,7 @@ export default function ProductList() {
 
       <Table<ProductsType>
         scroll={{ x: "max-content" }}
-        pagination={{ showSizeChanger: true }}
+        pagination={{ showSizeChanger: true, total: dataSourceCount }}
         rowKey="id"
         onChange={tableChange}
         columns={columns}

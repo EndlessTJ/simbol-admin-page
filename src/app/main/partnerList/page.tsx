@@ -30,6 +30,7 @@ import {
   cooperationType,
   ModalFormHandleStatus,
   PartnerChannelQueryType,
+  PaginatedResult,
 } from "@/type";
 import { Company, CooperationStatus } from "@/constants";
 import FormModal from "@/components/FormModal";
@@ -39,6 +40,7 @@ const { Item } = Form;
 const { Option } = Select;
 export default function PartnerList() {
   const [dataSource, setDataSource] = useState<PartnerChannelType[]>([]);
+  const [dataSourceCount, setDataSourceCount] = useState<number>(0);
   const [updateId, setUpdateId] = useState<string>();
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<PartnerChannelQueryType >();
@@ -77,14 +79,15 @@ export default function PartnerList() {
   }, [handleEditModal]);
 
   const getDataSource = useCallback(async () => {
-    const data = await requestGet("/partners/list", {
+    const data = await requestGet<PaginatedResult<PartnerChannelType>>("/partners/list", {
       page: pagination?.current || 1,
       limit: pagination?.pageSize || 10,
       sortBy: "contractDate",
       sortOrder: "ASC",
       ...searchParams,
     });
-    setDataSource(data);
+    setDataSource(data.list);
+    setDataSourceCount(data.meta.total)
   }, [pagination, searchParams]);
 
   useEffect(() => {
@@ -313,7 +316,7 @@ export default function PartnerList() {
       </FormModal>
 
       <Table<PartnerChannelType>
-        pagination={{ showSizeChanger: true }}
+        pagination={{ showSizeChanger: true, total: dataSourceCount }}
         scroll={{ x: "max-content" }}
         rowKey="id"
         onChange={tableChange}

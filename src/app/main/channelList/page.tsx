@@ -30,6 +30,7 @@ import {
   ModalFormText,
   ModalFormHandleStatus,
   PartnerChannelQueryType,
+  PaginatedResult,
 } from "@/type";
 import { Company, CooperationStatus } from "@/constants";
 
@@ -39,6 +40,7 @@ const { Item } = Form;
 const { Option } = Select;
 export default function ChannelList() {
   const [dataSource, setDataSource] = useState<PartnerChannelType[]>([]);
+  const [dataSourceCount, setDataSourceCount] = useState<number>(0);
   const [updateId, setUpdateId] = useState<string>();
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<PartnerChannelQueryType>();
@@ -78,15 +80,25 @@ export default function ChannelList() {
     });
   }, [handleEditModal]);
 
+  // const copyItem = useCallback(async (record: PartnerChannelType) => {
+
+  //   handleEditModal("CREATE_OPEN");
+  //   setInitValues({
+  //     ...record,
+  //     contractDate: dayjs(record.contractDate) as unknown as Date,
+  //   });
+  // }, [handleEditModal]);
+
   const getDataSource = useCallback(async () => {
-    const data = await requestGet("/channels/list", {
+    const data = await requestGet<PaginatedResult<PartnerChannelType>>("/channels/list", {
       page: pagination?.current || 1,
       limit: pagination?.pageSize || 10,
       sortBy: "contractDate",
       sortOrder: "ASC",
       ...searchParams,
     });
-    setDataSource(data);
+    setDataSource(data.list);
+    setDataSourceCount(data.meta.total)
   }, [pagination, searchParams]);
 
   useEffect(() => {
@@ -113,6 +125,7 @@ export default function ChannelList() {
       setConfirmLoading(false);
       message.success("创建成功");
     } catch (error) {
+      setConfirmLoading(false)
       console.log(error);
     }
   };
@@ -205,6 +218,9 @@ export default function ChannelList() {
             <Button onClick={() => updateItem(record)} type="link">
               修改
             </Button>
+            {/* <Button onClick={() => copyItem(record)} type="link">
+              复制一条
+            </Button> */}
           </Space>
         ),
       },
@@ -274,13 +290,13 @@ export default function ChannelList() {
         handleCancel={handleEditModal}
         show={modalShow}
       >
-        <Form.Item name="name" label="渠道名称">
+        <Form.Item name="name" rules={[{ required: true, message: "请输入名称" }]}  label="渠道名称">
           <Input placeholder="请输入" />
         </Form.Item>
-        <Form.Item name="contractDate" label="签约日期">
+        <Form.Item name="contractDate" rules={[{ required: true, message: "请输入签约日期" }]}  label="签约日期">
           <DatePicker placeholder="请选择" />
         </Form.Item>
-        <Form.Item name="currentStatus" label="合作状态">
+        <Form.Item name="currentStatus" rules={[{ required: true, message: "请输入合作状态" }]}  label="合作状态">
           <Select
             placeholder="请选择"
             options={Object.keys(CooperationStatus).map((value: string) => ({
@@ -289,7 +305,7 @@ export default function ChannelList() {
             }))}
           ></Select>
         </Form.Item>
-        <Form.Item name="signCompony" label="签约主体">
+        <Form.Item name="signCompony" rules={[{ required: true, message: "请输入签约主体" }]}  label="签约主体">
           <Select
             placeholder="请选择"
             options={Object.values(Company).map((value: string) => ({
@@ -298,7 +314,7 @@ export default function ChannelList() {
             }))}
           ></Select>
         </Form.Item>
-        <Form.Item name="alias" label="渠道别名">
+        <Form.Item name="alias" rules={[{ required: true, message: "请输入渠道别名" }]}  label="渠道别名">
           <Input placeholder="请输入" />
         </Form.Item>
         <Form.Item name="invoiceInfo" label="开票信息">
@@ -316,7 +332,7 @@ export default function ChannelList() {
       </FormModal>
       <Table<PartnerChannelType>
         scroll={{ x: "max-content" }}
-        pagination={{ showSizeChanger: true }}
+        pagination={{ showSizeChanger: true, total: dataSourceCount }}
         rowKey="id"
         onChange={tableChange}
         columns={columns}

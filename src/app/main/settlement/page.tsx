@@ -40,6 +40,7 @@ import {
   SettlementTypeEnum,
   SettlementStatusTextEnum,
   SettlementStatusEnum,
+  PaginatedResult,
 } from "@/type";
 
 const { RangePicker } = DatePicker;
@@ -47,12 +48,14 @@ const { Item } = Form;
 
 export default function Settlement() {
   const [updateId, setUpdateId] = useState<string>();
-  const [incomingDataSource, setIncomingDataSource] = useState<
-    SettlementType[]
-  >([]);
-  const [outgoingDataSource, setOutgoingDataSource] = useState<
-    SettlementType[]
-  >([]);
+  // const [incomingDataSource, setIncomingDataSource] = useState<
+  //   SettlementType[]
+  // >([]);
+  // const [outgoingDataSource, setOutgoingDataSource] = useState<
+  //   SettlementType[]
+  // >([]);
+  const [dataSource, setDataSource] = useState<SettlementType[]>([]);
+  const [dataSourceCount, setDataSourceCount] = useState<number>(0);
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<SettlementFormType>();
   const [productOptions, setProductOptions] = useState<OptionsType[]>();
@@ -102,7 +105,7 @@ export default function Settlement() {
           currentSettlementType === "INCOMING" &&
           changedValues.settlementPartnerId
         ) {
-          productList = await requestGet("/partners/productsByPartnerId", {
+          productList = await requestGet<ProductsType[]>("/partners/productsByPartnerId", {
             partnerId: changedValues.settlementPartnerId,
           });
         }
@@ -110,7 +113,7 @@ export default function Settlement() {
           currentSettlementType === "OUTGOING" &&
           changedValues.settlementChannelId
         ) {
-          productList = await requestGet("/channels/productsByChannelId", {
+          productList = await requestGet<ProductsType[]>("/channels/productsByChannelId", {
             channelId: changedValues.settlementChannelId,
           });
         }
@@ -213,30 +216,95 @@ export default function Settlement() {
     [currentSettlementType, editFormValuesChange, handleEditModal]
   );
 
+  const copyItem = useCallback(
+    async (record: SettlementType) => {
+      handleEditModal("CREATE_OPEN"); 
+      if (currentSettlementType === "INCOMING") {
+        setInitChannelOptions([]);
+        setInitPartnerOptions([
+          {
+            value: (record.settlementPartner as PartnerChannelType).id,
+            label: (record.settlementPartner as PartnerChannelType).name,
+          },
+        ]);
+        await editFormValuesChange({
+          settlementPartnerId: (record.settlementPartner as PartnerChannelType)
+            .id,
+        });
+      }
+
+      if (currentSettlementType === "OUTGOING") {
+        setInitChannelOptions([
+          {
+            value: (record.settlementChannel as PartnerChannelType).id,
+            label: (record.settlementChannel as PartnerChannelType).name,
+          },
+        ]);
+        setInitPartnerOptions([]);
+        await editFormValuesChange({
+          settlementChannelId: (record.settlementChannel as PartnerChannelType)
+            .id,
+        });
+      };
+      const productObj = {} as {[key: string]: string}; // 产品金额的初始值
+      const productAmountValue = {} as {[key: string]: string};// 产品金额输入项数据
+      record.settlementProducts.forEach((item) => { productObj[item.id] = item.name})
+      const curSelectedProducts = record.productAmount?.map(item => {
+        productAmountValue[`productAmount_${item.productId}`] = item.amount.toString();
+        return {value: item.productId, label: productObj[item.productId]};
+      })
+      setSelectedProducts(curSelectedProducts || []);
+      
+      // setUpdateId(record.id);
+      // setTimeout(() => {
+        setInitValues({
+          settlementPartnerId: record?.settlementPartner?.id, // 结算产品方Id
+          settlementChannelId: record?.settlementChannel?.id, // 结算渠道方Id
+          settlementEntity: record.settlementEntity, // 结算主体
+          settlementType: record.settlementType,
+          amount: record.amount, // 结算金额
+          settlementPeriod: [dayjs(record.startDate), dayjs(record.endDate)], // 结算金额
+          settlementStatus: record.settlementStatus, // 结算单状态
+          number: record.number, // 结算数量
+          settlementProductIds: record.settlementProducts.map(
+            (product) => product.id
+          ), // 结算产品Id
+          remark: record.remark,
+          invoiceRate: record.invoiceRate, // 发票税率
+          ...productAmountValue
+        });
+      // });
+    },
+    [currentSettlementType, editFormValuesChange, handleEditModal]
+  );
+
   const getDataSource = useCallback(async () => {
     setLoading(true);
 
-    const data = await requestGet("/settlement/list", {
+    const data = await requestGet<PaginatedResult<SettlementType>>("/settlement/list", {
       page: pagination?.current || 1,
       limit: pagination?.pageSize || 10,
       sortBy: "createAt",
       sortOrder: "ASC",
+      settlementType: currentSettlementType,
       ...searchParams,
     });
     setLoading(false);
-    const incomingData = [] as SettlementType[];
-    const outgoingData = [] as SettlementType[];
-    data.forEach((settlement: SettlementType) => {
-      if (settlement.settlementType === "INCOMING") {
-        incomingData.push(settlement);
-      }
-      if (settlement.settlementType === "OUTGOING") {
-        outgoingData.push(settlement);
-      }
-    });
-    setOutgoingDataSource(outgoingData);
-    setIncomingDataSource(incomingData);
-  }, [pagination, searchParams]);
+    // const incomingData = [] as SettlementType[];
+    // const outgoingData = [] as SettlementType[];
+    // data.list.forEach((settlement: SettlementType) => {
+    //   if (settlement.settlementType === "INCOMING") {
+    //     incomingData.push(settlement);
+    //   }
+    //   if (settlement.settlementType === "OUTGOING") {
+    //     outgoingData.push(settlement);
+    //   }
+    // });
+    // setOutgoingDataSource(outgoingData);
+    // setIncomingDataSource(incomingData);
+    setDataSource(data.list);
+    setDataSourceCount(data.meta.total);
+  }, [currentSettlementType, pagination, searchParams]);
 
   useEffect(() => {
     getDataSource();
@@ -454,6 +522,7 @@ export default function Settlement() {
             <Button size="small" onClick={() => updateItem(record)} type="link">
               修改
             </Button>
+            <Button size="small" onClick={() => copyItem(record)} type="link">复制</Button>
             <Popconfirm
               title="确定要删除吗?"
               onConfirm={() => deleteItem(record.id)}
@@ -500,7 +569,7 @@ export default function Settlement() {
         fixed: true,
         width: "120px",
         render: (settlementPartner: PartnerChannelType) =>
-          settlementPartner.name,
+          settlementPartner?.name,
       },
       {
         title: "收款方",
@@ -562,17 +631,17 @@ export default function Settlement() {
             ></Select>
           </Item>
         </Col>
-        <Col span={8} key={"settlementType"}>
+        {/* <Col span={8} key={"settlementType"}>
           <Item name={`settlementType`} label={`结算类型`}>
             <Select
               placeholder="请选择"
               options={[
-                { value: "OUTGOING", label: "产品结算(收入)" },
-                { value: "INCOMING", label: "渠道结算（支出）" },
+                { value: "INCOMING", label: "产品结算(收入)" },
+                { value: "OUTGOING", label: "渠道结算（支出）" },
               ]}
             ></Select>
           </Item>
-        </Col>
+        </Col> */}
       </AdvancedSearchForm>
       <SearchActionWrap>
         <Button
@@ -695,12 +764,12 @@ export default function Settlement() {
             children: (
               <Table<SettlementType>
                 loading={loading}
-                pagination={{ showSizeChanger: true }}
+                pagination={{ showSizeChanger: true, total: dataSourceCount }}
                 rowKey="id"
                 scroll={{ x: "max-content" }}
                 onChange={tableChange}
                 columns={incomingColumns}
-                dataSource={incomingDataSource}
+                dataSource={dataSource}
               />
             ),
           },
@@ -710,12 +779,12 @@ export default function Settlement() {
             children: (
               <Table<SettlementType>
                 loading={loading}
-                pagination={{ showSizeChanger: true }}
+                pagination={{ showSizeChanger: true, total: dataSourceCount }}
                 rowKey="id"
                 scroll={{ x: "max-content" }}
                 onChange={tableChange}
                 columns={outgoingColumns}
-                dataSource={outgoingDataSource}
+                dataSource={dataSource}
               />
             ),
           },

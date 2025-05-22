@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import { Form, Modal, theme, FormInstance } from "antd";
+import { Form, Modal, theme, FormInstance, message } from "antd";
 import {CommonType, ModalFormHandleStatus } from "@/type";
 export interface FormModalProps<ValueType = unknown> {
   modalTitle: string;
@@ -29,8 +29,12 @@ const FormModal = <ValueType,>({
   const [form] = Form.useForm();
 
   useEffect(() => {
-    form.setFieldsValue(initValues);
-  }, [form, initValues])
+    if (initValues) {
+      form.setFieldsValue(initValues);
+    } else {
+      form.resetFields(); // 清空旧数据
+    }
+  }, [form, initValues]);
   
   const formStyle: React.CSSProperties = {
     maxWidth: "none",
@@ -54,6 +58,16 @@ const FormModal = <ValueType,>({
     form.resetFields();
   }
 
+  const validateFinsh = async (values: ValueType) => {
+    form.validateFields().then(() => {
+      onFinish(values);
+    }).catch(() => {
+      message.error('验证不通过')
+    });
+    
+    
+  }
+
   return (
     <Modal
       title={modalTitle}
@@ -71,7 +85,7 @@ const FormModal = <ValueType,>({
         // initialValues={initValues}
         name="partner-edit"
         style={formStyle}
-        onFinish={onFinish}
+        onFinish={validateFinsh}
         onValuesChange={onValuesChange}
         {...formItemLayout}
       >

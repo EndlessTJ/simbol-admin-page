@@ -26,11 +26,13 @@ import {
   BusinessInfoQueryType,
   ChannelInfoListTypeEnum,
   ChannelInfoListStatusEnum,
+  PaginatedResult,
 } from "@/type";
 
 const { Item } = Form;
 export default function BussinessInfoList() {
   const [dataSource, setDataSource] = useState<BusinessInfoType[]>([]);
+  const [dataSourceCount, setDataSourceCount] = useState<number>(0);
   const [updateId, setUpdateId] = useState<string>();
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<BusinessInfoFormType>();
@@ -72,14 +74,15 @@ export default function BussinessInfoList() {
   );
 
   const getDataSource = useCallback(async () => {
-    const data = await requestGet("/channel-info-list/list", {
+    const data = await requestGet<PaginatedResult<BusinessInfoType>>("/channel-info-list/list", {
       page: pagination?.current || 1,
       limit: pagination?.pageSize || 10,
       sortBy: "contactDate",
       sortOrder: "ASC",
       ...searchParams,
     });
-    setDataSource(data);
+    setDataSource(data.list);
+    setDataSourceCount(data.meta.total)
   }, [pagination, searchParams]);
 
   useEffect(() => {
@@ -235,7 +238,7 @@ export default function BussinessInfoList() {
       </FormModal>
       <Table<BusinessInfoType>
         scroll={{ x: "max-content" }}
-        pagination={{ showSizeChanger: true }}
+        pagination={{ showSizeChanger: true, total: dataSourceCount }}
         rowKey="id"
         onChange={tableChange}
         columns={columns}
