@@ -535,7 +535,7 @@ export default function Settlement() {
         ),
       },
     ],
-    [deleteItem, handleSettlementStatusChange, updateItem]
+    [copyItem, deleteItem, handleSettlementStatusChange, updateItem]
   );
 
   const outgoingColumns: TableProps<SettlementType>["columns"] = useMemo(
@@ -631,17 +631,6 @@ export default function Settlement() {
             ></Select>
           </Item>
         </Col>
-        {/* <Col span={8} key={"settlementType"}>
-          <Item name={`settlementType`} label={`结算类型`}>
-            <Select
-              placeholder="请选择"
-              options={[
-                { value: "INCOMING", label: "产品结算(收入)" },
-                { value: "OUTGOING", label: "渠道结算（支出）" },
-              ]}
-            ></Select>
-          </Item>
-        </Col> */}
       </AdvancedSearchForm>
       <SearchActionWrap>
         <Button

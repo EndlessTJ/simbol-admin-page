@@ -37,7 +37,7 @@ export enum CooperationStatusTextEnum {
 }
 export enum CompanyEnum {
   SBJZ = '莘柏景泽', // 莘柏景泽
-  QMYC = '青蔓优创', // 莘柏景泽
+  QMYC = '青蔓优创', // 青蔓优创
 }
 
 export interface ProductLinksType{
@@ -282,3 +282,187 @@ export enum ModalFormText {
 }
 
 export type ModalFormHandleStatus = 'CLOSE' | 'CONFIRM' | 'UPDATE_OPEN' | 'CREATE_OPEN'
+
+/**
+ * 财务列表数据
+*/
+// 交易类型合并枚举
+export enum TradeType {
+  // 收入类型
+  PROMOTION = 'PROMOTION',
+  INTEREST = 'INTEREST',
+  SHAREHOLDER_INJECTION = 'SHAREHOLDER_INJECTION',
+  REFUND = 'REFUND',
+  PREPAYMENT = 'PREPAYMENT',
+
+  // 支出类型
+  BANK_FEE = 'BANK_FEE',
+  SMS_FEE = 'SMS_FEE',
+  TAX = 'TAX',
+  SOCIAL_SECURITY_FEE = 'SOCIAL_SECURITY_FEE',
+  REIMBURSEMENT = 'REIMBURSEMENT',
+  SALARY = 'SALARY',
+  PROMOTION_FEE = 'PROMOTION_FEE',
+  OTHER = 'OTHER',
+}
+
+// 借贷类型枚举
+export enum DebitCreditType {
+  DEBIT = 'DEBIT', // 借
+  CREDIT = 'CREDIT', // 贷
+}
+
+export enum FundListTypeEnum {
+  INCOME = 'INCOME',
+  EXPENSE = 'EXPENSE'
+}
+// 交易列表数据分类
+export enum DataTypeEnum {
+  RECORD = 'RECORD', // 录入
+  IMPORT = 'IMPORT', // 导入
+}
+export interface FundListType {
+  id: string;
+  tradeTime: Date; // 交易时间
+  tradeType: TradeType; // 交易类型
+  settlementChannel: PartnerChannelType; // 收款方
+  settlementPartner: PartnerChannelType; // 打款方
+  tradeEntity: CompanyEnum; // 交易主体
+  amount: number; // 交易金额
+  description: string; // 交易描述
+  debitCreditType: DebitCreditType; // 借贷类型
+  transactionTime: string; // 交易时间戳
+  isPrepayment: boolean; // 是否预付
+}
+
+export interface FundListQueryType {
+  tradeTimeRange: [Date, Date];
+  tradeType: TradeType;
+  settlementChannelId: string;
+  settlementPartnerId: string; // 打款方
+  tradeEntity: CompanyEnum;
+  isPrepayment: boolean;
+}
+
+export interface FundListFormType {
+  tradeTime: Dayjs; // 交易时间
+  tradeType: TradeType; // 交易类型
+  settlementChannelId: string; // 收款方
+  settlementPartnerId: string; // 打款方
+  tradeEntity: CompanyEnum; // 交易主体
+  amount: number; // 交易金额
+  description: string; // 交易描述
+  debitCreditType: DebitCreditType; // 借贷类型
+  transactionTime?: string; // 交易时间戳
+  isPrepayment: boolean; // 是否预付
+  dataType?: DataTypeEnum; // 数据类型
+}
+
+/**
+ * @deprecated
+ * 收入支出财务数据
+ */
+export interface FundListCommonType {
+  id: string;
+  amount: number; // 金额
+  remark: string; // 描述
+  isPrepayment: boolean; // 是否预防
+}
+
+
+/**
+ * @deprecated
+ * 收入类型枚举
+ */
+export enum IncomeTypeEnum {
+  PROMOTION = 'PROMOTION', // 推广收入
+  INTEREST = 'INTEREST', // 利息收入
+  SHAREHOLDER_INJECTION = 'SHAREHOLDER_INJECTION', // 股东注资
+  REFUND = 'REFUND', // 退款
+  PREPAYMENT = 'PREPAYMENT', // 预付款
+}
+/**
+ * @deprecated
+ * 收入列表数据类型
+ */
+export interface IncomesType extends FundListCommonType {
+  incomeDate: Date; // 收入日期
+  incomeType: IncomeTypeEnum; // 收入类型
+  incomeEntity: CompanyEnum; // 收入主体
+  settlementPartner: PartnerChannelType; // 付款公司
+}
+/**
+ * @deprecated
+ * 收入查询数据类型
+ */
+export interface IncomesQueryType {
+  incomeDateRange: [Date, Date];
+  incomeType: IncomeTypeEnum;
+  settlementPartnerId: string;
+  incomeEntity: keyof typeof CompanyEnum;
+  isPrepayment: boolean;
+}
+/**
+ * @deprecated
+ * 收入列表数据类型
+ */
+export interface IncomesFormType {
+  incomeDate: Date;
+  incomeType: IncomeTypeEnum;
+  settlementPartnerId: string;
+  incomeEntity: keyof typeof CompanyEnum;
+  amount: number;
+  remark: string;
+  transactionTime: string;
+  isPrepayment: boolean;
+}
+
+
+/**
+ * @deprecated
+ * 支出类型
+ */
+export enum ExpensesTypeEnum {
+  BANK_FEE = 'BANK_FEE', // 银行手续费
+  SMS_FEE = 'SMS_FEE', // 短信费
+  TAX = 'TAX', // 税费
+  SOCIAL_SECURITY_FEE = 'SOCIAL_SECURITY_FEE', // 社保公积金费
+  REIMBURSEMENT = 'REIMBURSEMENT', // 报销
+  SALARY = 'SALARY', // 工资
+  PROMOTION_FEE = 'PROMOTION_FEE', // 推广费用
+  OTHER = 'OTHER', // 其他
+}
+/**
+ * @deprecated
+ * 支出类型
+ */
+export interface ExpensesType extends FundListCommonType {
+  expenseDate: Date;
+  expenseType: ExpensesTypeEnum;
+  settlementChannel: PartnerChannelType;
+  expenseEntity: CompanyEnum;
+}
+/**
+ * @deprecated
+ * 支出类型
+ */export interface ExpenseFormType {
+  expenseDate: Date;
+  expenseType: ExpensesTypeEnum;
+  settlementChannelId: string;
+  expenseEntity: keyof typeof CompanyEnum;
+  amount: number;
+  remark: string;
+  transactionTime: string;
+  isPrepayment: boolean;
+}
+/**
+ * @deprecated
+ * 支出类型
+ */
+export interface ExpenseQueryType {
+  expenseDateRange: [Date, Date];
+  expenseType: ExpensesTypeEnum;
+  settlementChannelId: string;
+  expenseEntity: keyof typeof CompanyEnum;
+  isPrepayment: boolean;
+}

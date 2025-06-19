@@ -40,7 +40,7 @@ const DebounceSelect: FC<DebounceSelectProps<PartnerChannelType>>  = ({ fetchOpt
 
     return debounce(loadOptions, debounceTimeout);
   }, [fetchOptions, debounceTimeout]);
-
+  // console.log(initOptions, 666)
   return <Select
     // labelInValue
     filterOption={false}
