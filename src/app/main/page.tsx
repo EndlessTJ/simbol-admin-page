@@ -151,12 +151,18 @@ export default function Dashboard() {
   }, [entity, filterParams, handleData, segmentValue]);
 
   const getPartners = useCallback(async (ids: string[]) => {
+    if(!ids.length) {
+      return []
+    }
     return await requestGet<PartnerChannelType[]>("partners/listByIds", {
       ids,
     });
   }, []);
 
   const getChannels = useCallback(async (ids: string[]) => {
+    if(!ids.length) {
+      return []
+    }
     return await requestGet<PartnerChannelType[]>("channels/listByIds", {
       ids,
     });
