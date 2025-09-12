@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import _ from "lodash";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { usePathname } from "next/navigation";
 import LocaleWrap from "@/components/LocaleConfigWrap";
 import AdvancedSearchForm from "@/components/AdvancedSearchForm";
@@ -290,18 +290,6 @@ export default function Settlement() {
       ...searchParams,
     });
     setLoading(false);
-    // const incomingData = [] as SettlementType[];
-    // const outgoingData = [] as SettlementType[];
-    // data.list.forEach((settlement: SettlementType) => {
-    //   if (settlement.settlementType === "INCOMING") {
-    //     incomingData.push(settlement);
-    //   }
-    //   if (settlement.settlementType === "OUTGOING") {
-    //     outgoingData.push(settlement);
-    //   }
-    // });
-    // setOutgoingDataSource(outgoingData);
-    // setIncomingDataSource(incomingData);
     setDataSource(data.list);
     setDataSourceCount(data.meta.total);
   }, [currentSettlementType, pagination, searchParams]);
@@ -370,7 +358,17 @@ export default function Settlement() {
     }
   };
   const onSearch = async (values: CommonType) => {
-    setSearchParams(values as unknown as SettlementQueryType);
+    const { settlementPeriod, ...otherValues } = values;
+    let params = otherValues as unknown as SettlementQueryType;
+    if(settlementPeriod) {
+      params = {
+        startDate: (settlementPeriod as [Dayjs, Dayjs])[0],
+        endDate: (settlementPeriod as [Dayjs, Dayjs])[1],
+        ...otherValues
+      } as unknown as SettlementQueryType;
+    } 
+
+    setSearchParams(params as unknown as SettlementQueryType);
   };
 
   const tableChange = (pagination: TablePaginationConfig) => {
@@ -398,6 +396,7 @@ export default function Settlement() {
 
   const tabChange = (activeKey: string) => {
     setCurrentSettlementType(activeKey as keyof typeof SettlementTypeEnum);
+    setPagination({})
   };
 
   // 处理表格中修改状态

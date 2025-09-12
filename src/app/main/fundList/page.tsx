@@ -53,16 +53,18 @@ const { Item } = Form;
 const fundTableKeyMap = {
   交易时间: "tradeTime",
   "借/贷": "debitCreditType",
-  收入金额: "amount",
-  支出金额: "amount",
+  收入金额: "incomeAmount",
+  支出金额: "expenseAmount",
   交易用途: "tradeType",
   交易说明: "description",
-} as { [key: string]: keyof FundListFormType };
+  交易时间戳: "transactionTime"
+} as { [key: string]: keyof FundListFormType | 'incomeAmount' | 'expenseAmount' };
 
 export default function FundList() {
   const [messageApi, contextHolder] = message.useMessage();
   const [updateId, setUpdateId] = useState<string>();
   const [dataSource, setDataSource] = useState<FundListType[]>([]);
+  // const [amountTotal, setAmountTotal] = useState<number>(0)
   const [dataSourceCount, setDataSourceCount] = useState<number>(0);
   const [modalShow, setModalShow] = useState<boolean>(false);
   const [initValues, setInitValues] = useState<FundListFormType>();
@@ -155,8 +157,8 @@ export default function FundList() {
       {
         page: pagination?.current || 1,
         limit: pagination?.pageSize || 10,
-        sortBy: "createAt",
-        sortOrder: "ASC",
+        sortBy: "tradeTime",
+        sortOrder: "DESC",
         debitCreditType: currentFundType === "INCOME" ? "CREDIT" : "DEBIT",
         ...searchParams,
       }
@@ -183,7 +185,9 @@ export default function FundList() {
     setInitPartnerOptions([]);
   };
   const onSearch = async (values: CommonType) => {
+    setPagination({current: 1, pageSize: 10})
     setSearchParams(values as unknown as FundListQueryType);
+    
   };
 
   const handleEditData = async (values: FundListFormType) => {
@@ -237,6 +241,7 @@ export default function FundList() {
     setCurrentFundType(activeKey as keyof typeof FundListTypeEnum);
     setSelectedItem([]);
     setselectedKey([]);
+    setPagination({current: 1, pageSize: 10})
   };
 
   // 删除结算单
@@ -265,10 +270,11 @@ export default function FundList() {
         { header: 1, range: 1 }
       ); // generate objects
       if (jsonData.length) {
-        const entityItem = jsonData.shift() as string[];
+        try {
+          const entityItem = (jsonData.shift() as string[]).filter(() => true); // Array.from去除空位
         const keyList = jsonData.shift() as string[];
         const keyObj = {} as {
-          [key: number]: keyof FundListFormType | "account" | "brief";
+          [key: number]: keyof FundListFormType | "account" | "brief" | 'incomeAmount' | 'expenseAmount' ;
         };
         let curEntity = CompanyEnum["SBJZ"];
         if (entityItem[1].includes("莘柏景泽")) {
@@ -281,6 +287,8 @@ export default function FundList() {
           if (fundTableKeyMap[key]) {
             keyObj[index] = fundTableKeyMap[key];
           }
+
+          // 由于fundTableKeyMap的值是定的是FundListFormType，所以这里单独加上FundListFormType没有的key
           if (key === "对方户名") {
             keyObj[index] = "account";
           }
@@ -288,7 +296,6 @@ export default function FundList() {
             keyObj[index] = "brief";
           }
         });
-
         const tableList = jsonData
           .slice(0, -2)
           .map((item: (string | number | undefined)[]) => {
@@ -302,15 +309,14 @@ export default function FundList() {
             });
             return fundItem;
           });
-
         const payload: FundListFormType[] = tableList.map((item) => {
           const payloadItem = {} as FundListFormType;
           payloadItem.tradeEntity = curEntity;
           payloadItem.tradeTime = dayjs(item.tradeTime);
-          payloadItem.transactionTime = Date.now().toString();
+          payloadItem.transactionTime = item.transactionTime as string;
           payloadItem.dataType = DataTypeEnum["IMPORT"];
           payloadItem.isPrepayment = false;
-          payloadItem.amount = item.amount as number;
+          payloadItem.amount = (item.debitCreditType === '借' ? item.expenseAmount : item.incomeAmount) as number;
           payloadItem.description = item.description as string;
           payloadItem.tradeType = matchTradeType(
             item.tradeType,
@@ -335,6 +341,10 @@ export default function FundList() {
         messageApi.destroy();
         getDataSource();
         return result;
+        } catch (error) {
+          console.log(error)
+        }
+        
       }
       return false;
     },
@@ -703,7 +713,7 @@ export default function FundList() {
             children: (
               <Table<FundListType>
                 loading={loading}
-                pagination={{ showSizeChanger: true, total: dataSourceCount }}
+                pagination={{ showSizeChanger: true, total: dataSourceCount, current: pagination?.current, pageSize: pagination?.pageSize }}
                 rowSelection={{ ...rowSelection }}
                 rowKey="id"
                 scroll={{ x: "max-content" }}
@@ -720,7 +730,7 @@ export default function FundList() {
               <Table<FundListType>
                 loading={loading}
                 rowSelection={{ ...rowSelection }}
-                pagination={{ showSizeChanger: true, total: dataSourceCount }}
+                pagination={{ showSizeChanger: true, total: dataSourceCount, current: pagination?.current, pageSize: pagination?.pageSize }}
                 rowKey="id"
                 scroll={{ x: "max-content" }}
                 onChange={tableChange}

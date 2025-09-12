@@ -34,14 +34,17 @@ export const matchTradeType = (info: string | number | undefined, type: '借' | 
         if(info.includes('工资')){
           tradeType = TradeType["SALARY"]
         }
+        if(info.includes('短信费')){
+          tradeType = TradeType["SMS_FEE"]
+        }
       }
 
     }
     if(brief === '费用外收'){
       tradeType = TradeType["BANK_FEE"]
-      if(typeof info === 'string' && info.includes('短信费')){
-        tradeType = TradeType["SMS_FEE"]
-      }
+      // if(typeof info === 'string' && info.includes('短信费')){
+      //   tradeType = TradeType["SMS_FEE"]
+      // }
     }
     if(brief === '公共缴费'){
       tradeType = TradeType['TAX']

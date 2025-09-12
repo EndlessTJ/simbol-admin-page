@@ -466,3 +466,49 @@ export interface ExpenseQueryType {
   expenseEntity: keyof typeof CompanyEnum;
   isPrepayment: boolean;
 }
+
+// dashboard
+
+export interface FinancialSummary {
+  channelId: string | null;
+  createAt: Date;
+  id: string;
+  partnerId: string | null;
+  periodDate: Date;
+  periodType: string;
+  profit: string;
+  totalExpense: string;
+  totalIncome: string;
+  tradeEntity: CompanyEnum;
+  tradeType: keyof typeof TradeType
+  updateAt: Date;
+}
+
+export interface RealFinancialSummary {
+  channelId: string | null;
+  partnerId: string | null;
+  period: Date;
+  totalProfit: string;
+  totalExpense: string;
+  totalIncome: string;
+  tradeEntity: CompanyEnum;
+  tradeType: keyof typeof TradeType
+}
+
+// 财务数据聚合范围类型
+export enum PeriodTypeEnum {
+  DAY = "day",
+  MONTH = "month",
+  QUARTER = "quarter",
+  YEAR = "year",
+  REALYEAR = "real_year",
+  REALQUARTER = "real_quarter",
+  REALMONTH = "real_month",
+  ALL = "all",
+}
+
+export enum Company {
+  SBJZ = "莘柏景泽",
+  QMYC = "青蔓优创",
+  ALL = "所有主体",
+}

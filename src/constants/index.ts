@@ -9,7 +9,7 @@ export enum CooperationStatus {
 
 export enum Company {
   SBJZ = '莘柏景泽',
-  QMYC = '青蔓优创'
+  QMYC = '青蔓优创',
 }
 
 /**
