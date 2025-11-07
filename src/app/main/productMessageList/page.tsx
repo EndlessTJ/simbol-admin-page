@@ -203,8 +203,10 @@ export default function ProductList() {
         dataIndex: "links",
         key: "links",
         width: '280px',
-        render: (links: { id: string; name: string }[]) =>
-          links?.map((link) => <Tag key={link.id}>{link.name}</Tag>),
+        render: (links: { id: string; name: string, linkStatus: 0 | 1 }[]) => 
+          links?.map((link) => {
+            return link.linkStatus === 1 ? <Tag key={link.id}>{link.name}</Tag> : null;
+          } ),
       },
       {
         title: "对接人",

@@ -46,8 +46,8 @@ const { RangePicker } = DatePicker;
 const { Item } = Form;
 const { Text } = Typography;
 const colorTagMap = {
-  draft: '#87d068',
-  active: '#108ee9',
+  draft: '#108ee9',
+  active: '#87d068',
   archived: '#f50'
 }
 export default function BusinessPlans() {
