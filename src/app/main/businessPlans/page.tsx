@@ -6,9 +6,10 @@ import {
   Select,
   Space,
   TablePaginationConfig,
+  Tag,
   Typography,
 } from "antd";
-import _ from 'lodash';
+// import _ from 'lodash';
 import dayjs from "dayjs";
 import { usePathname } from "next/navigation";
 import LocaleWrap from "@/components/LocaleConfigWrap";
@@ -44,6 +45,11 @@ import {
 const { RangePicker } = DatePicker;
 const { Item } = Form;
 const { Text } = Typography;
+const colorTagMap = {
+  draft: '#87d068',
+  active: '#108ee9',
+  archived: '#f50'
+}
 export default function BusinessPlans() {
   const [updateId, setUpdateId] = useState<string>();
   const [dataSource, setDataSource] = useState<BusinessPlansType[]>([]);
@@ -52,7 +58,7 @@ export default function BusinessPlans() {
   const [initValues, setInitValues] = useState<BusinessPlansFormType>();
   const [initProductsOptions, setInitProductsOptions] = useState<OptionsType[]>();
   const [initChannelOptions, setInitChannelOptions] = useState<OptionsType[]>();
-  const [linkOptions, setLinkOptions] = useState<OptionsType[]>();
+  // const [linkOptions, setLinkOptions] = useState<OptionsType[]>();
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>();
   const [searchParams, setSearchParams] = useState<BusinessPlansQueryType>();
@@ -94,7 +100,7 @@ export default function BusinessPlans() {
     handleEditModal("UPDATE_OPEN");
     setInitProductsOptions([{value: record.product.id, label: record.product.name}]);
     setInitChannelOptions([{value: record.channel.id, label: record.channel.name}]);
-    setLinkOptions([{value: record.link.id, label: record.link.name}])
+    // setLinkOptions([{value: record.link.id, label: record.link.name}])
     setUpdateId(record.id);
     setInitValues({
       name: record.name, // 计划名称
@@ -103,7 +109,7 @@ export default function BusinessPlans() {
       status: record.status, //计划状态
       productId: record.product.id, // 所属产品id
       channelId: record.channel.id, // 投放的渠道Id
-      link: record.link.id, // 产品链接
+      link: record.link.name, // 产品链接
       description: record.description, // 计划描述
       cost: record.cost, //计划单价
       pricingType: record.pricingType, //计价类型
@@ -114,7 +120,7 @@ export default function BusinessPlans() {
     handleEditModal("CREATE_OPEN");
     setInitProductsOptions([{value: record.product.id, label: record.product.name}]);
     setInitChannelOptions([{value: record.channel.id, label: record.channel.name}]);
-    setLinkOptions([{value: record.link.id, label: record.link.name}])
+    // setLinkOptions([{value: record.link.id, label: record.link.name}])
     setInitValues({
       name: record.name, // 计划名称
       startDate: dayjs(record.startDate), // 计划开始时间
@@ -122,7 +128,7 @@ export default function BusinessPlans() {
       status: record.status, //计划状态
       productId: record.product.id, // 所属产品id
       channelId: record.channel.id, // 投放的渠道Id
-      link: record.link.id, // 产品链接
+      link: record.link.name, // 产品链接
       description: record.description, // 计划描述
       cost: record.cost, //计划单价
       pricingType: record.pricingType, //计价类型
@@ -157,7 +163,8 @@ export default function BusinessPlans() {
   const clearModalStatus = () => {
     setInitChannelOptions([]);
     setInitProductsOptions([]);
-    setLinkOptions([]);
+    // setUpdateId('')
+    // setLinkOptions([]);
   };
 
   const handleEditData = async (values: BusinessPlansFormType) => {
@@ -212,21 +219,22 @@ export default function BusinessPlans() {
     return productLink.map((item: ProductLinksType) => ({
       label: item.name,
       value: item.id,
+      disabled: item.linkStatus === 0
     }));
   };
 
-  const editFormValuesChange = (changedValues: CommonType) => {
-    (_.debounce(async () => {
-      if(changedValues.productId) {
-        const linkList = await requestGet<ProductLinksType[]>("/products/linkListByProductId", {
-          // 修改
-          productId: changedValues.productId,
-        });
-        const linkOptions = linkList.map((link: ProductLinksType) => ({label: link.name, value: link.id}))
-        setLinkOptions(linkOptions);
-      }
-    }, 600))()
-  }
+  // const editFormValuesChange = (changedValues: CommonType) => {
+  //   (_.debounce(async () => {
+  //     if(changedValues.productId) {
+  //       // const linkList = await requestGet<ProductLinksType[]>("/products/linkListByProductId", {
+  //       //   // 修改
+  //       //   productId: changedValues.productId,
+  //       // });
+  //       // const linkOptions = linkList.map((link: ProductLinksType) => ({label: link.name, value: link.id}))
+  //       // setLinkOptions(linkOptions);
+  //     }
+  //   }, 600))()
+  // }
 
   const columns: TableProps<BusinessPlansType>["columns"] = useMemo(
     () => [
@@ -242,13 +250,13 @@ export default function BusinessPlans() {
         dataIndex: "status",
         key: "status",
         width: '80px',
-        render: (status: keyof typeof PlansStatus) => PlansStatus[status],
+        render: (status: keyof typeof PlansStatus) => <Tag color={colorTagMap[status]}>{PlansStatus[status]}</Tag>,
       },
       {
         title: "单价",
         dataIndex: "cost",
         key: "cost",
-        width: '60px',
+        width: '70px',
       },
       {
         title: "计价类型",
@@ -385,28 +393,29 @@ export default function BusinessPlans() {
         onFinish={handleEditData}
         initValues={initValues}
         handleCancel={handleEditModal}
-        onValuesChange={editFormValuesChange}
+        // onValuesChange={editFormValuesChange}
         show={modalShow}
       >
-        <Form.Item name="name" required label="名称">
+        <Form.Item name="name" rules={[{ required: true, message: "请输入链接" }]} required label="名称">
           <Input placeholder="请输入" />
         </Form.Item>
-        <Form.Item name="startDate" label="开始时间">
+        <Form.Item name="startDate" rules={[{ required: true, message: "请输入链接" }]} label="开始时间">
           <DatePicker showTime placeholder="请选择" />
         </Form.Item>
-        <Form.Item name="endDate" label="结束时间">
+        <Form.Item name="endDate" rules={[{ required: true, message: "请输入链接" }]} label="结束时间">
           <DatePicker showTime placeholder="请选择" />
         </Form.Item>
-        <Form.Item name="status" label="状态">
+        <Form.Item name="status" rules={[{ required: true, message: "请输入链接" }]} label="状态">
           <Select
             placeholder="请选择"
             options={Object.keys(PlansStatus).map((value: string) => ({
               value,
               label: PlansStatus[value as keyof typeof PlansStatus],
+              disabled: (openModalFormOpenStatus === "CREATE_OPEN" && value === 'archived')
             }))}
           ></Select>
         </Form.Item>
-        <Form.Item name="pricingType" label="计价类型">
+        <Form.Item name="pricingType" rules={[{ required: true, message: "请输入链接" }]} label="计价类型">
           <Select
             placeholder="请选择"
             options={Object.keys(PlansPricingType).map((value: string) => ({
@@ -415,7 +424,7 @@ export default function BusinessPlans() {
             }))}
           ></Select>
         </Form.Item>
-        <Form.Item name="productId" required label="所属产品">
+        <Form.Item name="productId" rules={[{ required: true, message: "请输入链接" }]} required label="所属产品">
           <DebounceSelect
             showSearch
             placeholder="请输入搜索"
@@ -424,20 +433,21 @@ export default function BusinessPlans() {
             style={{ width: "100%" }}
           />
         </Form.Item>
-        <Form.Item name="channelId" required label="投放渠道">
+        <Form.Item name="channelId" rules={[{ required: true, message: "请输入链接" }]} label="投放渠道">
           <DebounceSelect
             initOptions={initChannelOptions}
             placeholder="请输入搜索"
             fetchOptions={searchChannel}
           />
         </Form.Item>
-        <Form.Item name="link" label="投放链接">
-          <Select
+        <Form.Item name="link" rules={[{ required: true, message: "请输入链接" }]} label="投放链接">
+          {/* <Select
             placeholder="请选择"
             options={linkOptions}
-          ></Select>
+          ></Select> */}
+          <Input allowClear placeholder="请输入链接" />
         </Form.Item>
-        <Form.Item name="cost" required label="单价">
+        <Form.Item name="cost" rules={[{ required: true, message: "请输入链接" }]} required label="单价">
           <Input placeholder="请输入" />
         </Form.Item>
         <Form.Item name="description" label="描述">
@@ -450,6 +460,7 @@ export default function BusinessPlans() {
         scroll={{ x: "max-content" }}
         pagination={{ showSizeChanger: true, total: dataSourceCount }}
         rowKey="id"
+        bordered
         onChange={tableChange}
         columns={columns}
         dataSource={dataSource}

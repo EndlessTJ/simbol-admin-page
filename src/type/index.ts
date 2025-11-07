@@ -43,6 +43,7 @@ export enum CompanyEnum {
 export interface ProductLinksType{
   id: string;
   name: string;
+  linkStatus: 0 | 1
 }
 
 // 产品类型
@@ -64,7 +65,7 @@ export interface ProductsFormType {
   name: string; // 产品名称
   company: string; // 产品所属公司
   channel: string[]; //推广产品的渠道
-  links: string;
+  // links: string;
   contactPerson: string;
   remark?: string;
 }
@@ -511,4 +512,61 @@ export enum Company {
   SBJZ = "莘柏景泽",
   QMYC = "青蔓优创",
   ALL = "所有主体",
+}
+
+// 合同管理
+export enum PARTNER_CHANNEL_NATURE {
+  PARTNER = 'PARTNER',
+  CHANNEL = 'CHANNEL',
+}
+
+// 合同类型
+export enum CONTRACT_TYPE {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
+}
+// 合同状态
+
+export enum CONTRACT_STATUS {
+  PENDING = 'PENDING', // 待生效
+  ACTIVE = 'ACTIVE', // 已生效
+  EXPIRED = 'EXPIRED', // 已失效
+  IN_PROCESS = 'IN_PROCESS', // 流程中
+  RESIGNED = 'RESIGNED', // 已重签
+}
+export interface ContractListType {
+  id: string;
+  code: string;  // 合同编号
+  signCompony: Company; // 签约主体
+  partnerNature: PARTNER_CHANNEL_NATURE; // 签约方性质
+  contractType: CONTRACT_TYPE; // 合同类型
+  contractStatus: CONTRACT_STATUS; // 合同状态
+  platform: string; // 电子合同平台
+  startDate: Date; // 合同开始日期
+  endDate: Date; // 合同终止日期
+  partner: PartnerChannelType; // 
+  channel: PartnerChannelType;
+  remark: string; // 备注
+}
+
+export interface ContractFormType {
+  code: string;  // 合同编号
+  signCompony: Company; // 签约主体
+  partnerNature: PARTNER_CHANNEL_NATURE; // 签约方性质
+  contractType: CONTRACT_TYPE; // 合同类型
+  contractStatus: CONTRACT_STATUS; // 合同状态
+  platform: string; // 电子合同平台
+  startDate: Date; // 合同开始日期
+  endDate: Date; // 合同终止日期
+  partner: PartnerChannelType; // 
+  channel: PartnerChannelType;
+  remark: string; // 备注
+}
+
+export interface ContractQueryType {
+  contractStatus?: CONTRACT_STATUS;
+  startDate?: Date[];
+  endDate?: Date[];
+  partner?: string;
+  channel?: string;
 }

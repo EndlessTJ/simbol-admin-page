@@ -303,7 +303,6 @@ export default function Dashboard() {
     (data: FinancialSummary[]) => {
       const expenseMap = new Map<string, number>();
       const expenseList = [];
-      console.log(data)
       for (const item of data) {
         if (item.channelId) {
           expenseMap.set(

@@ -62,3 +62,23 @@ export enum DebitCreditTextType {
   DEBIT = '借', // 借
   CREDIT = '贷', // 贷
 }
+
+// 合同状态枚举
+export enum CONTRACT_STATUS_TEXT {
+  PENDING = '待生效', // 待生效
+  ACTIVE = '已生效', // 已生效
+  EXPIRED = '已失效', // 已失效
+  IN_PROCESS = '流程中', // 流程中
+  RESIGNED = '已重签', // 已重签
+}
+
+export enum PARTNER_CHANNEL_NATURE_TEXT {
+  PARTNER = '品牌方',
+  CHANNEL = '渠道方',
+}
+
+// 合同类型
+export enum CONTRACT_TYPE_TEXT {
+  ONLINE = '电子合同',
+  OFFLINE = '纸质合同',
+}

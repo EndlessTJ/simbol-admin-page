@@ -73,14 +73,13 @@ export default function ProductList() {
 
   const updateItem = useCallback((record: ProductsType) => {
     handleEditModal("UPDATE_OPEN");
-    const linkStrs = record.links.map((link) => link.name).join(",");
+    // const linkStrs = record.links.map((link) => link.name).join(",");
     const channelOption = record.channel.map(item => ({value: item.id, label: item.name}));
     setInitPartnerOptions([{value: record.company.id, label: record.company.name}]);
     setInitChannelOptions(channelOption)
     setUpdateId(record.id);
     setInitValues({
       name: record.name,
-      links: linkStrs,
       contactPerson: record.contactPerson,
       company: record?.company.id,
       remark: record.remark,
@@ -289,9 +288,9 @@ export default function ProductList() {
         <Form.Item name="contactPerson" label="对接人">
           <Input placeholder="请输入" />
         </Form.Item>
-        <Form.Item name="links" label="拥有链接">
+        {/* <Form.Item name="links" label="拥有链接">
           <Input.TextArea placeholder="如果有多条链接，请使用英文逗号“,”分隔。" />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item name="company" required label="所属公司">
           <DebounceSelect
             showSearch
